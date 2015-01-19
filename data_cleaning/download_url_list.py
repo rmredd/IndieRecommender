@@ -72,7 +72,7 @@ def collect_indiedb_data():
     for i in range(5):
         results = read_single_dataset_from_kimono(games_url,apikey,2500*i)
         results = results['collection1']
-        for j in len(results):
+        for j in range(len(results)):
             #Check to see if this is a duplicate
             if len(title) > 0:
                 if title[-1] == title_cleanup.replace_right_quote(results[j]['Title']['text']):
