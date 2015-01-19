@@ -52,7 +52,7 @@ def collect_indiedb_data():
     API key and address are currently hard-coded
     '''
     
-    games_url = "https://www.kimonolabs.com/apis/dhngio36"
+    games_url = "https://www.kimonolabs.com/api/dhngio36"
     #My API key -- currently hard-coded
     apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
 
@@ -106,6 +106,12 @@ def collect_indiedb_data():
 
     return title, creator, release_date, engine, rating, votes, type, theme, players, platform, description
 
+def cleanup_and_put_in_database(title, creator, release_data, engine, rating, votes, type, theme, players, platform, description):
+    '''
+    Performs additional cleanup and puts the rest of the data into an SQL table for later retrieval
+    '''
+    return
 
 if __name__ == '__main__':
     #print_urllist()
+    pass
