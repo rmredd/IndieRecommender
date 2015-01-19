@@ -83,7 +83,11 @@ def collect_indiedb_data():
                     if 'Sumtext' in results[j].keys() and description[-1] == '':
                         description[-1] = results[j]['Sumtext']
                     if 'Releasedate' in results[j].keys():
-                        release_date[-1] = results[j]['Releasedate'][9:]
+                        try:
+                            release_date[-1] = results[j]['Releasedate'][9:]
+                        except TypeError:
+                            #Just don't bother to do anything if there's a failture, and keep on chugging
+                            pass
                     continue
             #Not a duplicate
             title.append(title_cleanup.replace_right_quote(results[j]['Title']['text']))
