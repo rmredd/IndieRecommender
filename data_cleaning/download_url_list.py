@@ -86,8 +86,9 @@ def collect_indiedb_data():
                         try:
                             release_date[-1] = results[j]['Releasedate'][9:]
                         except TypeError:
-                            #Just don't bother to do anything if there's a failture, and keep on chugging
-                            pass
+                            #Fix the problem using other data if we can
+                            if 'Maker_release' in results[j].keys():
+                                release_date[-1] = results[j]['Maker_release']['text'].split('|')[1][10:]
                     continue
             #Not a duplicate
             title.append(title_cleanup.replace_right_quote(results[j]['Title']['text']))
@@ -100,7 +101,10 @@ def collect_indiedb_data():
             try:
                 release_date.append(results[j]['Releasedate'][9:])
             except TypeError:
-                release_date.append('')
+                if 'Maker_release' in results[j].keys():
+                    release_date.append(results[j]['Maker_release']['text'].split('|')[1][10:])
+                else:
+                    release_date.append('')
             engine.append(results[j]['Engine']['text'])
             rating.append(results[j]['Avg Rating'])
             votes.append(results[j]['Votecount'].split()[0])
