@@ -92,9 +92,10 @@ def collect_indiedb_data():
                 creator.append(results[j]['Maker_release']['text'].split('|')[0])
             else:
                 creator.append('')
-            if 'Releasedate' in results[j].keys():
+            #Catch errors in reading the release date
+            try:
                 release_date.append(results[j]['Releasedate'][9:])
-            else:
+            except TypeError:
                 release_date.append('')
             engine.append(results[j]['Engine']['text'])
             rating.append(results[j]['Avg Rating'])
