@@ -82,6 +82,8 @@ def collect_indiedb_data():
                         creator[-1] = results[j]['Maker_release']['text'].split('|')[0]
                     if 'Sumtext' in results[j].keys() and description[-1] == '':
                         description[-1] = results[j]['Sumtext']
+                    if 'Releasedate' in results[j].keys():
+                        release_date[-1] = results[j]['Releasedate'][9:]
                     continue
             #Not a duplicate
             title.append(title_cleanup.replace_right_quote(results[j]['Title']['text']))
@@ -90,7 +92,10 @@ def collect_indiedb_data():
                 creator.append(results[j]['Maker_release']['text'].split('|')[0])
             else:
                 creator.append('')
-            release_date.append(results[j]['Releasedate'][9:])
+            if 'Releasedate' in results[j].keys():
+                release_date.append(results[j]['Releasedate'][9:])
+            else:
+                release_date.append('')
             engine.append(results[j]['Engine']['text'])
             rating.append(results[j]['Avg Rating'])
             votes.append(results[j]['Votecount'].split()[0])
