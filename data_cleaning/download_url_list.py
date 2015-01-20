@@ -281,21 +281,45 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
             break
 
     print "Finished inserting main tags, moving to descriptions"
+
+    return
         
+
+def create_description_table(description, cursor):
+    '''
+    Creation and cleanup for just the raw description data table
+    '''
+    ngames = len(description)
+
     #Save plain text descriptions in a second table
     cursor.execute("DROP TABLE IF EXISTS Game_descr")
     cursor.execute("CREATE TABLE Game_descr(Id INT PRIMARY KEY AUTO_INCREMENT, game_id INT, description VARCHAR(2001))")
     for i in range(ngames):
-        my_descript = re.sub(r"\'","\\'",description[i])
+        if description[i] != '':
+            if type(description[i]) == dict:
+                my_descript = re.sub(r"\'",r"\\'",description[i]['text'])
+            else:
+                my_descript = re.sub(r"\'",r"\\'",description[i])
+            my_descript = my_descript.encode('ascii','backslashreplace')
+            my_descript = re.sub(r'\\u\d\d\d\d',r'',my_descript)
+        else:
+            my_descript = 'BLANK'
+
+        if len(my_descript) > 2000:
+            my_descript = my_descript[:2000]
+
+        insert_statement = "INSERT INTO Game_descr(game_id, description) VALUES ("+str(i+1)+",'"+my_descript+"')"
+        print i, insert_statement
         try:
-            cursor.execute("INSERT INTO Game_descr(description) VALUES ("+str(i)+"'"+my_descript+"')")
+            cursor.execute(insert_statement)
         except UnicodeEncodeError:
             print "Unicode issues, sorry."
             print my_descript
             break
         except mdb.Error, e:
             print "Failed insert statement: "
-            print "INSERT INTO Game_descr(description) VALUES ("+str(i)+"'"+my_descript+"')"
+            print insert_statement
+            print e
             break
 
     print "Table insertion complete"
