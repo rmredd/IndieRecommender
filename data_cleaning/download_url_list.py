@@ -3,6 +3,7 @@
 import urllib
 import json
 import numpy as np
+import re
 
 import MySQLdb as mdb
 
@@ -185,6 +186,11 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
     #Get number of games
     ngames = len(title)
 
+    #Remove any single quotes from title strings
+    title_new = np.copy(title)
+    for i in range(ngames):
+        title_new[i] = re.sub(r"\'",r"\\'",title[i])
+
     #Clean the unicode from the creator names
     creator_old = np.copy(np.array(creator))
     for i in range(ngames):
@@ -195,7 +201,13 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
     engine_new = np.copy(engine)
     for i in range(ngames):
         engine_new[i] = title_cleanup.replace_right_quote(engine[i])
-            
+    
+    #Fix games types with apostrophes
+    game_type = np.array(game_type)
+    hack_places = np.where(game_type == "Hack 'n' Slash")[0]
+    for i in range(len(hack_places)):
+        game_type[hack_places[i]] = "Hack n Slash"
+
     #Split up the player modes into a nice matrix
     clean_play = get_tidy_modes_list(players).astype(int)
 
@@ -207,9 +219,9 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
     f = open("../game_basics_list.txt",'w')
     for i in range(len(title)):
         try:
-            print >> f, title[i]+','+creator[i]+','+release_date[i]+','+engine_new[i]+','+rating[i]+','+votes[i]+','+game_type[i]+','+theme[i]+','+players[i]+','+platform[i]    
+            print >> f, title_new[i]+','+creator[i]+','+release_date[i]+','+engine_new[i]+','+rating[i]+','+votes[i]+','+game_type[i]+','+theme[i]+','+players[i]+','+platform[i]    
         except UnicodeEncodeError:
-            print i, " -- " ,title[i]+','+creator[i]+','+release_date[i]+','+engine_new[i]+','+rating[i]+','+votes[i]+','+game_type[i]+','+theme[i]+','+players[i]+','+platform[i]    
+            print i, " -- " ,title_new[i]+','+creator[i]+','+release_date[i]+','+engine_new[i]+','+rating[i]+','+votes[i]+','+game_type[i]+','+theme[i]+','+players[i]+','+platform[i]    
 
     f.close()
     
@@ -246,12 +258,21 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
     for some_platform in unique_platforms:
         values_names += ", "+some_platform
     for i in range(ngames):
-        insert_statement = "INSERT INTO Games("+values_names+") VALUES ('"+title[i]+"', '"+creator[i]+"', '"+engine_new[i]+"', "+str(rating[i])+", "+str(votes[i])
-        insert_statement += ", "+str(release_day[i])+", "+release_date[i][-4:]+", '"+release_date[i][:3]+"', '"+game_type[i]+"', '"+theme[i]+"', "+str(clean_play[i,0])+", "
+        insert_statement = "INSERT INTO Games("+values_names+") VALUES ('"+title_new[i]+"', '"+re.sub(r"\'",r"\\'",creator[i]).strip()+"', '"+re.sub(r"\'",r"\\'",engine_new[i])
+        insert_statement += "', "+str(rating[i])+", "+str(votes[i])
+        year = release_date[i][-4:]
+        if not re.match(r'\d\d\d\d',year):
+            year = '-1'
+        insert_statement += ", "+str(release_day[i])+", "+year+", '"+release_date[i][:3]+"', '"+game_type[i]+"', '"+theme[i]+"', "+str(clean_play[i,0])+", "
         insert_statement += str(clean_play[i,1])+", " +str(clean_play[i,2])+ ", " + str(clean_play[i,3])
         for j in range(len(unique_platforms)):
             insert_statement += ", "+str(clean_plats[i,j])
         insert_statement += ")"
+        if i == 0:
+            print ""
+            print "Template insert statement..."
+            print insert_statement
+            print ""
         try:
             cursor.execute(insert_statement)
         except mdb.Error, e:
@@ -263,13 +284,18 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
         
     #Save plain text descriptions in a second table
     cursor.execute("DROP TABLE IF EXISTS Game_descr")
-    cursor.execute("CREATE TABLE Game_descr(Id INT PRIMARY KEY AUTO_INCREMENT, description VARCHAR(2001))")
+    cursor.execute("CREATE TABLE Game_descr(Id INT PRIMARY KEY AUTO_INCREMENT, game_id INT, description VARCHAR(2001))")
     for i in range(ngames):
+        my_descript = re.sub(r"\'","\\'",description[i])
         try:
-            cursor.execute("INSERT INTO Game_descr(description) VALUES ('"+description[i]+"')")
+            cursor.execute("INSERT INTO Game_descr(description) VALUES ("+str(i)+"'"+my_descript+"')")
+        except UnicodeEncodeError:
+            print "Unicode issues, sorry."
+            print my_descript
+            break
         except mdb.Error, e:
             print "Failed insert statement: "
-            print "INSERT INTO Game_descr(description) VALUES ('"+description[i]+"')"
+            print "INSERT INTO Game_descr(description) VALUES ("+str(i)+"'"+my_descript+"')"
             break
 
     print "Table insertion complete"
