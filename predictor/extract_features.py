@@ -67,7 +67,10 @@ def process_single_game(game,prior_game=False):
     game_vector[0] = int(game[7])
     count += 1
     #Release month
-    game_vector[count] = month_dict[game[8]]
+    try:
+        game_vector[count] = month_dict[game[8]]
+    except KeyError:
+        print "Issue: month label is ",game[8]
     count += 1
     #Game type values
     game_type_place = np.where(game[9] == game_type_list)[0]
@@ -117,7 +120,7 @@ def has_made_prior_game(game_id,games_df):
 
     return False
 
-def process_games_from_db(cursor):
+def process_games_from_db(cur):
     '''
     Returns the matrix of game vectors drawn from the MySQL database
     It also computes the success vector
@@ -144,7 +147,7 @@ def process_games_from_db(cursor):
 
     #Finish off by making the success vector
     ngames = len(game_matrix)
-    metacritic_range = np.zeros(ngames)
+    metacritic_rating = np.zeros(ngames)
     rating = games_df['rating'].get_values()
     votes = games_df['votes'].get_values()
     success_vector = make_success_vector(rating, votes, metacritic_rating)
