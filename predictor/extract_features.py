@@ -145,14 +145,17 @@ def process_games_from_db(cur):
 
     game_matrix = np.array(game_matrix)
 
+    return game_matrix, games_df
+
+def make_full_success_vector(games_df):
     #Finish off by making the success vector
-    ngames = len(game_matrix)
+    ngames = len(games_df)
     metacritic_rating = np.zeros(ngames)
-    rating = games_df['rating'].get_values()
-    votes = games_df['votes'].get_values()
+    rating = games_df['rating'].get_values().astype(float)
+    votes = games_df['votes'].get_values().astype(int)
     success_vector = make_success_vector(rating, votes, metacritic_rating)
 
-    return game_matrix, success_vector
+    return success_vector
 
 def evaluate_test(function_result, expected_result):
     '''
@@ -257,9 +260,10 @@ def run_tests():
         evaluate_test(has_made_prior_game(4368,games_df),True)
 
         print "Testing process_games_from_db..."
-        game_matrix, success = process_games_from_db(cur)
+        game_matrix, games_df = process_games_from_db(cur)
+        success = make_full_success_vector(games_df)
         print game_matrix[4637], success[4637]
-
+        print game_matrix[4638], success[4638]
     return
 
 if __name__ == '__main__':

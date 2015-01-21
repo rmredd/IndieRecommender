@@ -100,7 +100,11 @@ if __name__ == '__main__':
     with con:
         print "Getting games data..."
         cur = con.cursor()
-        game_matrix, success = extract_features.process_games_from_db(cur)
+        game_matrix, games_df = extract_features.process_games_from_db(cur)
+        success = extract_features.make_full_success_vector(games_df)
+
+    for i in range(10):
+        print success[i], games_df['rating'][i], games_df['votes'][i]
 
     #Add the bias unit to the game matrix
     game_mat_ext = np.ones([len(game_matrix),len(game_matrix[0])+1])
