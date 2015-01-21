@@ -64,7 +64,7 @@ def run_logreg_training(game_matrix, success,lambda_reg=0.):
     print "Regularization: lambda=",lambda_reg
 
     #Initialize the initial parameter guesses
-    init_parameters = np.zeros(nfeatures).astype(float)
+    init_parameters = np.random.uniform(-0.1,0.1,nfeatures)
 
     print "Initial cost: ",logreg_cost_function(init_parameters,ngames,game_matrix,success,lambda_reg)
 
@@ -81,12 +81,16 @@ def precision(y_pred, y_truth):
     '''
     Given a prediction and a truth value, finds fraction of positives that are true (purity)
     '''
+    if np.sum(y_pred) == 0:
+        #If there are no predicted positives, return zero
+        return 0.
     return len(np.where((y_pred == y_truth) & (y_pred == 1))[0])/float(np.sum(y_pred))
 
 def recall(y_pred, y_truth):
     '''
     Gives fraction of true positives which are found (completeness)
     '''
+
     return len(np.where((y_pred == y_truth) & (y_pred == 1))[0])/float(np.sum(y_truth))
 
 if __name__ == '__main__':
@@ -108,6 +112,7 @@ if __name__ == '__main__':
 
     #Add the bias unit to the game matrix
     game_mat_ext = np.ones([len(game_matrix),len(game_matrix[0])+1])
+    game_mat_ext[:,1:] = game_matrix
     
     #Normalize the features
     xlist = np.where(game_mat_ext[:,1] != -1)[0]
@@ -117,17 +122,18 @@ if __name__ == '__main__':
     #Do training
     print "Beginning training..."
     
-    parameters = run_logreg_training(game_mat_ext, success, lambda_reg=0.1)
+    parameters = run_logreg_training(game_mat_ext, success, lambda_reg=0.001)
     print parameters
 
     success_pred = hypothesis(game_mat_ext, parameters)
     success_binary = np.zeros_like(success_pred)
-    success_slice = np.where(success_pred > 0)[0]
+    success_slice = np.where(success_pred > 0.5)[0]
     success_binary[success_slice] += 1
+    print np.min(success_pred), np.max(success_pred)
 
     #Do quality assessment
     print "Success fraction: ",len(success), np.sum(success), np.sum(success_binary)
-    print "Accuracy: ",len(np.where(success_binary == success)[0])/float(len(success))
+    print "Accuracy: ",len(np.where(success_binary == success)[0])/float(len(success)),np.sum(success_binary)
     print "Precision: ",precision(success_binary, success)
     print "Recall: ",recall(success_binary, success)
     

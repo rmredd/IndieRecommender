@@ -17,7 +17,7 @@ def make_success_vector(rating, votes, metacritic_rating):
     '''
 
     success_vector = np.zeros(len(rating))
-    success_slice = np.where( (rating > 9) & (votes > 100) )[0] 
+    success_slice = np.where( (rating >= 9) & (votes > 50) )[0] 
     success_vector[success_slice] = 0*success_slice+1
     success_slice = np.where( (rating > 0) & (metacritic_rating > 75) )[0] 
     success_vector[success_slice] = 0*success_slice+1
