@@ -122,6 +122,33 @@ def process_games_from_db(cursor):
     Returns the matrix of game vectors drawn from the MySQL database
     It also computes the success vector
     '''
+    #First, collect the data from the database
+    cur.execute("SELECT * FROM Games")
+    games_rows = cur.fetchall()    
+    mycolumns = ['Id', 'title', 'creator', 'engine', 'rating', 'votes', 'release_day',
+                 'release_year', 'release_month', 'game_type', 'theme', 'single_player',
+                 'multiplayer', 'coop', 'mmo', 'Android', 'AndroidConsole', 'AndroidTab',
+                 'DC', 'DOS', 'DS', 'Flash', 'GBA', 'GCN', 'Linux', 'Mac', 'Metro', 'MetroTab',
+                 'Mobile', 'PS2', 'PS3', 'PS4', 'PSP', 'SNES', 'VITA', 'Web', 'Wii', 'WiiU', 'Windows', 'X360', 'XBONE', 'XBOX', 'iPad', 'iPhone']
+
+    
+    #Set up the pandas dataframe
+    games_df = pd.DataFrame(np.array(games_rows), columns = mycolumns)
+
+    #Now, create the feature matrix
+    game_matrix = []
+    for game in games_rows:
+        game_matrix.append( process_single_game( game, prior_game=has_made_prior_game(int(game[0]),games_df)) )
+
+    game_matrix = np.array(game_matrix)
+
+    #Finish off by making the success vector
+    ngames = len(game_matrix)
+    metacritic_range = np.zeros(ngames)
+    rating = games_df['rating'].get_values()
+    votes = games_df['votes'].get_values()
+    success_vector = make_success_vector(rating, votes, metacritic_rating)
+
     return game_matrix, success_vector
 
 def evaluate_test(function_result, expected_result):
@@ -225,6 +252,10 @@ def run_tests():
         evaluate_test(has_made_prior_game(1,games_df),False)
         evaluate_test(has_made_prior_game(62,games_df),False)
         evaluate_test(has_made_prior_game(4368,games_df),True)
+
+        print "Testing process_games_from_db..."
+        game_matrix, success = process_games_from_db(cur)
+        print game_matrix[4637], success[4637]
 
     return
 
