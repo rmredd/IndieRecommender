@@ -2,3 +2,5 @@ gamelist.txt
 steamapi.txt
 datacleaning/download_url_list.pyc
 datacleaning/download_url_list.py~
+predictor/extract_features.pyc
+predictor/extract_features.py~
