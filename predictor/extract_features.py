@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import MySQLdb as mdb
 
-def make_success_vector(rating, votes, metacritic_rating):
+def make_success_vector(rating, votes, min_rating, min_votes):
     '''
     This is the current method of defining game "success"
     A game must have a rating>9 and votes>100, or
@@ -17,9 +17,7 @@ def make_success_vector(rating, votes, metacritic_rating):
     '''
 
     success_vector = np.zeros(len(rating))
-    success_slice = np.where( (rating >= 9) & (votes > 50) )[0] 
-    success_vector[success_slice] = 0*success_slice+1
-    success_slice = np.where( (rating > 0) & (metacritic_rating > 75) )[0] 
+    success_slice = np.where( (rating >= min_rating) & (votes > min_votes) )[0] 
     success_vector[success_slice] = 0*success_slice+1
 
     return success_vector
@@ -126,13 +124,17 @@ def process_games_from_db(cur):
     It also computes the success vector
     '''
     #First, collect the data from the database
-    cur.execute("SELECT * FROM Games")
-    games_rows = cur.fetchall()    
     mycolumns = ['Id', 'title', 'creator', 'engine', 'rating', 'votes', 'release_day',
                  'release_year', 'release_month', 'game_type', 'theme', 'single_player',
                  'multiplayer', 'coop', 'mmo', 'Android', 'AndroidConsole', 'AndroidTab',
                  'DC', 'DOS', 'DS', 'Flash', 'GBA', 'GCN', 'Linux', 'Mac', 'Metro', 'MetroTab',
                  'Mobile', 'PS2', 'PS3', 'PS4', 'PSP', 'SNES', 'VITA', 'Web', 'Wii', 'WiiU', 'Windows', 'X360', 'XBONE', 'XBOX', 'iPad', 'iPhone']
+    select_command = "SELECT Id"
+    for column_name in mycolumns[1:]:
+        select_command += ", "+column_name
+    select_command += " FROM Games"
+    cur.execute(select_command)
+    games_rows = cur.fetchall()
 
     
     #Set up the pandas dataframe
@@ -147,13 +149,12 @@ def process_games_from_db(cur):
 
     return game_matrix, games_df
 
-def make_full_success_vector(games_df):
+def make_full_success_vector(games_df,min_rating,min_votes):
     #Finish off by making the success vector
     ngames = len(games_df)
-    metacritic_rating = np.zeros(ngames)
     rating = games_df['rating'].get_values().astype(float)
     votes = games_df['votes'].get_values().astype(int)
-    success_vector = make_success_vector(rating, votes, metacritic_rating)
+    success_vector = make_success_vector(rating, votes, min_rating, min_votes)
 
     return success_vector
 
@@ -261,7 +262,7 @@ def run_tests():
 
         print "Testing process_games_from_db..."
         game_matrix, games_df = process_games_from_db(cur)
-        success = make_full_success_vector(games_df)
+        success = make_full_success_vector(games_df, 9., 50)
         print game_matrix[4637], success[4637]
         print game_matrix[4638], success[4638]
     return

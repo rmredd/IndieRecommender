@@ -93,6 +93,63 @@ def recall(y_pred, y_truth):
 
     return len(np.where((y_pred == y_truth) & (y_pred == 1))[0])/float(np.sum(y_truth))
 
+def f1_score(y_pred, y_truth):
+    p = precision(y_pred, y_truth)
+    r = recall(y_pred, y_truth)
+    if p == 0 and r == 0:
+        return 0.
+    return 2*p*r/(p+r)
+
+def estimate_threshold(success_prediction, success):
+    '''
+    Estimates the best threshold to use for predictive purposes, based on F1 score
+    '''
+
+    return threshold
+
+def run_generalized_training_and_test(game_matrix, success, lambda_reg, training_function, cost_function):
+    '''
+    Given input data and a chosen algorithm, does training and test; returns fit parameters
+    Note that this is generalized, so different algorithms can be tested; assumes that inputs to the
+    training function are game_matrix, success, and lambda_reg (or another single scalar value)
+
+    This also produces an estimate of the threshold to use for the best performance
+    '''
+
+    ngames = len(game_matrix)
+    #Randomly select 80% of training data
+    slice_permute = np.random.permutation(ngames)
+    ngames_train = int(np.floor(0.8*ngames))
+    slice_train = slice_permute[:ngames_train]
+    slice_test = slice_permute[ngames_train:]
+    print "Beginning initial training..."
+    parameters = training_function(game_matrix[slice_train], success[slice_train], lambda_reg=lambda_reg)
+    print "Getting cost and results on test set..."
+
+    print "Test cost: ",cost_function(parameters,ngames-ngames_train,game_matrix[slice_test],success[slice_test],lambda_reg)
+    #Get prediction of success
+    success_pred = hypothesis(game_matrix[slice_test], parameters)
+    success_binary = np.zeros_like(success_pred)
+    success_slice = np.where(success_pred > 0.5)[0]
+    success_binary[success_slice] += 1
+    print np.min(success_pred), np.max(success_pred)
+
+    print "Success fraction: ",len(success[slice_test]), np.sum(success[slice_test]), np.sum(success_binary)
+    print "Accuracy: ",len(np.where(success_binary == success[slice_test])[0])/float(ngames-ngames_train),np.sum(success_binary)
+    print "Precision: ",precision(success_binary, success[slice_test])
+    print "Recall: ",recall(success_binary, success[slice_test])
+    print "F1 score: ",f1_score(success_binary, success[slice_test])
+
+    return parameters
+
+def store_parameters_in_database():
+    '''
+    Stores a single set of fitting parameters in a database
+    
+    This also stores the offset used in the year data, and the prediction threshold
+    '''
+    return
+
 if __name__ == '__main__':
     f = open("../login.txt")
     login_txt = f.read()
@@ -105,10 +162,7 @@ if __name__ == '__main__':
         print "Getting games data..."
         cur = con.cursor()
         game_matrix, games_df = extract_features.process_games_from_db(cur)
-        success = extract_features.make_full_success_vector(games_df)
-
-    for i in range(10):
-        print success[i], games_df['rating'][i], games_df['votes'][i]
+        success = extract_features.make_full_success_vector(games_df,8.,50.)
 
     #Add the bias unit to the game matrix
     game_mat_ext = np.ones([len(game_matrix),len(game_matrix[0])+1])
@@ -120,21 +174,9 @@ if __name__ == '__main__':
     game_mat_ext[xlist,1] -= yr_avg
 
     #Do training
-    print "Beginning training..."
-    
-    parameters = run_logreg_training(game_mat_ext, success, lambda_reg=0.001)
+    print "Running training using logistic regression..."
+    lambda_reg = 0.001
+    parameters = run_generalized_training_and_test(game_mat_ext, success, lambda_reg, run_logreg_training, logreg_cost_function)
     print parameters
-
-    success_pred = hypothesis(game_mat_ext, parameters)
-    success_binary = np.zeros_like(success_pred)
-    success_slice = np.where(success_pred > 0.5)[0]
-    success_binary[success_slice] += 1
-    print np.min(success_pred), np.max(success_pred)
-
-    #Do quality assessment
-    print "Success fraction: ",len(success), np.sum(success), np.sum(success_binary)
-    print "Accuracy: ",len(np.where(success_binary == success)[0])/float(len(success)),np.sum(success_binary)
-    print "Precision: ",precision(success_binary, success)
-    print "Recall: ",recall(success_binary, success)
     
     
