@@ -158,6 +158,31 @@ def make_full_success_vector(games_df,min_rating,min_votes):
 
     return success_vector
 
+def process_game_summaries_from_db(cur):
+    '''
+    Reads in information from the database based on word counts of 
+    Produces a binary (present, yes/no) matrix, and a list of the featured words
+    '''
+
+    #Get data from the database
+    cur.execute("SELECT * FROM Summary_words")
+    summary_matrix = cur.fetchall()
+    #Drop the first two columns, which are id and game_id
+    summary_matrix = np.array(summary_matrix)[:,2:].astype(int)
+
+    #Convert to ones or zeros
+    summary_matrix = summary_matrix > 0
+
+    #Get list of words used
+    cur.execute("SHOW COLUMNS FROM Summary_words")
+    summary_words = np.array(cur.fetchall())
+    summary_words = summary_words[2:,0]
+    #Remove the "stem_" header from each word
+    for i in range(len(summary_words)):
+        summary_words[i] = summary_words[i][5:]
+
+    return summary_matrix, summary_words
+
 def evaluate_test(function_result, expected_result):
     '''
     Simple test evaluation function
