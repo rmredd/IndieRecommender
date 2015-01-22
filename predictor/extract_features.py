@@ -172,6 +172,7 @@ def process_game_summaries_from_db(cur):
 
     #Convert to ones or zeros
     summary_matrix = summary_matrix > 0
+    summary_matrix = summary_matrix.astype(int)
 
     #Get list of words used
     cur.execute("SHOW COLUMNS FROM Summary_words")
