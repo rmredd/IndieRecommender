@@ -20,7 +20,7 @@ def get_metacritic_game(title,cur):
     return mygame[0]
 
 
-def get_matching_indie_games(genre, game_type, num_players, ):
+def get_matching_indie_games(genre, game_type, num_players, cur):
     #Get the list of words
     columns_command = "SHOW COLUMNS FROM Summary_words"
     cur.execute(columns_command)
@@ -66,13 +66,13 @@ def get_best_match_with_rating():
 
 def run_everything_on_input_title(title, cur):
     '''
-    Returns title, theme, game_type, indiedb rating
+    Returns title, game_type, theme, indiedb rating
     '''
     my_game = get_metacritic_game(title,cur)
         
     #Something here for sorting out genre labels
 
-    game_data, words_list = get_matching_indie_games('Sci-Fi', '%Shooter', 'single_player')
+    game_data, words_list = get_matching_indie_games('Sci-Fi', '%Shooter', 'single_player',cur)
     
     words_list = np.array(words_list)[:,0]
 
