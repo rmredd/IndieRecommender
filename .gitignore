@@ -1,4 +1,5 @@
-.gitignore~
+*~
+*.pyc
 gamelist.txt
 steamapi.txt
 datacleaning/download_url_list.pyc
