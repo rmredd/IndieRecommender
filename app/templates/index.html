@@ -8,7 +8,7 @@
    <meta name="author" content="">
    <link rel="icon" href="../../favicon.ico">
 
-   <title>Indie Predictor</title>
+   <title>Indie Recommender</title>
 
    <!-- Bootstrap core CSS -->
    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
@@ -58,8 +58,8 @@
   <div class="container">
 
     <div class="starter-template">
-        <h2>Search Existing Games</h2>
-        <p>Enter a game you are interest in here.</p>
+        <h2>Get A Recommendation</h2>
+        <p>Enter a game you already like.</p>
     </div>
 
     <div class = "container">
@@ -67,57 +67,17 @@
       <form  action="/output" method="GET">
         <div class="form-group">
           <label for="ID">Search Game  Title:</label>
-          <input type="text" id="ID" name='ID' placeholder="e.g. Kerbal Space Program">
+          <input type="text" id="ID" name='ID' placeholder="e.g. BioShock">
         </div>
 
         <div>
-          <button type="submit" class="btn btn-default btn-lg">Find this game!</button>
+          <button type="submit" class="btn btn-default btn-lg">Suggest games</button>
         </div>
 
       </form>
     </div>
 
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-
-  </div> <!-- /.container-->
-
-  <div class="container">
-
-    <div class="starter-template">
-        <h2>Evaluate A New Game</h2>
-        <p>Describe your possible future game.</p>
-    </div>
-
-<div class="dropdown">
-  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-    Game type
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdown_gtype">
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Puzzle</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Adventure</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arcade</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Platformer</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Real Time Strategy</a></li>
-  </ul>
-</div>
-
-<div class="dropdown">
-  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-    Setting
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdown_gtype">
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Science Fiction</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Antiquity</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">History</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Fantasy</a></li>
-    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Abstract</a></li>
-  </ul>
-</div>
-
-<br> Platform: <br>
+<br> If you like, specify a platform: <br>
 
 <div class="row">
   <div class="col-lg-6">
@@ -127,22 +87,6 @@
   </div><!-- /.col-lg-6 -->
 </div><!-- /.row -->
 
-Game summary:
-<br>
-<textarea cols="50" rows="5">
-</textarea>
-
-<br><br>
-
-    <div class = "container">
-
-      <form  action="/output_eval" method="GET">
-        <div class="button-group">
-          <button type="button" class="btn btn-default btn-lg">Evaluate</button>
-        </div>
-
-      </form>
-    </div>
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>

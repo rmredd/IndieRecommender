@@ -2,14 +2,11 @@ from flask import render_template, request
 from app import app
 import MySQLdb as mdb
 
-from test_model import ModelIt
+from login_script import login_mysql
+import recommend_games
 
 #Read login info
-f = open('login.txt')
-login = f.read()
-f.close()
-login = login.split()
-db = mdb.connect(login[0],login[1],login[2],'indiedb')
+db = login_mysql('login.txt')
 charset = 'utf8'
 
 @app.route('/')
@@ -53,17 +50,12 @@ def games_output():
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
-    cur.execute("SELECT title, creator, game_type, rating FROM Games WHERE title='%s';" % game)
-    query_results = cur.fetchall()
+    
+    titles, game_types, themes, ratings = recommend_games.run_everything_on_input_title(game,cur)
 
   games = []
-  for result in query_results:
-    games.append(dict(title=result[0], creator=result[1], game_type=result[2], rating=result[3]))
+  for i in range(len(titles)):
+    games.append(dict(title=titles[i], game_type=game_types[1], theme=themes[i], rating=ratings[i]))
 
-  if len(games) == 0:
-     rating_input = 0
-  else:
-     rating_input = games[0]['rating']
-  the_result = ModelIt(game,rating_input)
-  return render_template("output.html", games = games, the_result = the_result)
+  return render_template("output.html", games = games)
 
