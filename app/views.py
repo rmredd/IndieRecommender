@@ -1,9 +1,9 @@
 from flask import render_template, request
 from app import app
+from recommender import recommend_games
 import MySQLdb as mdb
 
 from login_script import login_mysql
-import recommend_games
 
 #Read login info
 db = login_mysql('login.txt')
