@@ -112,6 +112,19 @@ def collect_more_metacritic_data_to_database(cur):
     #My API key -- currently hard-coded
     apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
 
+    for i in range(2):
+        #Get the basic data from the api
+        results = read_single_dataset_from_kimono(more_info_url,apikey,2500*i)
+        results = results['collection1']
+
+        #For each element, first extract the data elements
+        
+        #Figure out the ID of this game in the database
+        
+        #Insert the genre list if it does not already exists (string with len 0)
+
+        #Add the remaining data
+
     return
 
 def cleanup_and_put_in_database(title, creator, release_date, engine, rating, votes, game_type, theme, players, platform, description,
