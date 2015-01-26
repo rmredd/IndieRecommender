@@ -256,7 +256,7 @@ def recollect_metacritic_summaries(cur):
         #Update the database
         if summary != '':
             #deal with annoying apostrophes
-            summary = re.sub(r"'",r"\\'",summary)
+            summary = re.sub(r"[^\](')",r"\1\\'",summary)
             if len(summary) > 2000:
                 summary = summary[:2000]
             update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
