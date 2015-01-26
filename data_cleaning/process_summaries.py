@@ -213,6 +213,28 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
 
         cur.execute(insert_command)
 
+    #Create a shorter table for saving the baseline idf values
+    create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT"
+    for i in range(nwords):
+        create_command += ", stem_" + words_common_text[i] + " FLOAT"
+    create_command += ")"
+    print create_command
+    cur.execute(create_command)
+    insert_command = "INSERT INTO idf_vals("
+    for i in range(nwords):
+        if i == 0:
+            insert_command += "stem_" + words_common_text[0]
+        else:
+            insert_command += ", stem_" + words_common_text[i]
+    insert_command += ") VALUES ("
+    for i in range(nwords):
+        if i == 0:
+            insert_command += str(idf[i])
+        else:
+            insert_command += ", "+str(idf[i])
+    insert_command += ")"
+    cur.execute(insert_command)
+    
     return
 
 
