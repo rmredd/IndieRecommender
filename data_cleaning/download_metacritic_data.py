@@ -74,9 +74,9 @@ def collect_basic_metacritic_data():
         results = results['collection1']
 
         for j in range(len(results)):
-            title.append(results[j]['Title']['text'])
+            title.append(re.sub(r"'",r"\\'",results[j]['Title']['text']))
             game_url.append(results[j]['Title']['href'])
-            genre_list.append( clean_genre_list(results[j]['Genre list']))
+            genre_list.append( re.sub(r"'",r"\\'",clean_genre_list(results[j]['Genre list'])))
             
     return title, genre_list, game_url
 
@@ -88,12 +88,18 @@ def make_main_metacritic_database(cur, title, genre_list, game_url):
 
     #Clear the table if it's already been made
     cur.execute('DROP TABLE IF EXISTS Metacritic')
-    cur.execute('CREATE TABLE Metacritic(Id INT AUTO_INCREMENT, title VARCHAR(100), meta_rating FLOAT, num_critic INT, user_rating FLOAT, num_users INT, num_players INT, genre VARCHAR(60), summary VARCHAR(2000), reviews VARCHAR(2000), url VARCHAR(200))')
+    cur.execute('CREATE TABLE Metacritic(Id INT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(100), meta_rating FLOAT, num_critic INT, user_rating FLOAT, num_users INT, num_players INT, genre VARCHAR(100), summary VARCHAR(2000), reviews VARCHAR(2000), url VARCHAR(200))')
     
-    for i in len(title):
-        insert_commaned = "INSERT INTO Metacritic(title, genre, url) VALUES ('"+title[i]+"'"
+    for i in range(len(title)):
+        insert_command = "INSERT INTO Metacritic(title, genre, url) VALUES ('"+title[i]+"'"
         insert_command += ", '"+genre_list[i]+"', '"+game_url[i]+"')"
-        cur.execute(insert_command)
+        print insert_command
+        try:
+            cur.execute(insert_command)
+        except mdb.Error, e:
+            print "ERROR -- unable to insert at ", i, " due to ", e
+            print insert_command
+            break
 
     return
 
