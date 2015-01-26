@@ -2,6 +2,7 @@
 
 import numpy as np
 import MySQLdb as mdb
+import re
 
 import clean_text
 from login_script import login_mysql
@@ -58,7 +59,7 @@ def extract_game_type_info(my_game):
         game_types.append('Role Playing')
     if 'Action RPG' in genre_list:
         game_types.append('Role Playing')
-    if 'Action Adventure' ni genre_list:
+    if 'Action Adventure' in genre_list:
         game_types.append('Adventure')
     if 'Platformer' in genre_list:
         game_types.append('Platformer')
@@ -255,10 +256,10 @@ def run_everything_on_input_title(title, cur, nvalues=5):
     #Make the dict we need to get the indices right
     words_index = {}
     for i in range(len(words_list)):
-        words_index[words_list[5:]] = i
+        words_index[words_list[i][5:]] = i
     
     #Separating out the summary for this game
-    my_summary = my_game[-1]
+    my_summary = my_game[2]
     
     #Read in the idf normalizations
     cur.execute("SELECT * FROM idf_vals WHERE Id = 1")
