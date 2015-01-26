@@ -102,6 +102,56 @@ def get_words_from_database(cur):
 
     return words_list, game_ids
 
+def get_num_docs_with_words(words_index, words_list):
+    '''
+    Takes as input the dict that takes words to the relevant index, and the overall
+    list of words across the game summaries corpus
+    '''
+
+    words_ndocs = np.zeros(len(words_common)).astype(int)
+
+    for words_set in words_list:
+        words_ndocs_tmp = np.zeros(len(words_common)).astype(int)
+        for word in words_set:
+            if word in words_index:
+                words_ndocs_tmp[words_index[word]] = 1
+        words_ndocs += words_ndocs_tmp
+
+    return words_ndocs
+
+def get_idf(ndocs, words_ndocs):
+    '''
+    Calculates inverse document frequency for the list of common words
+    Includes handling for case where term does not appear
+    '''
+
+    idf = np.log(ndocs/(1+float(words_ndocs)))
+
+    return idf
+
+def get_tf_idf(words_common_index, game_words, idf):
+    '''
+    Get the tf-idf values for a single game's words
+    Requires input of idf (which is the same for all documents) and the list of words in the game summary
+    Also requires input of the words index for getting matrix positions
+    '''
+
+    #Get the game words into a series, and do some counting
+    game_words_series = pd.Series(game_words)
+    game_words_text = game_words_series.value_counts().index
+    game_words_count = game_words_series.value_counts()
+    
+    #We'll be using augmented frequency, for term frequency, to avoid issues with varying document length
+    max_freq_doc = np.max(game_words_count)
+
+    #Term frequency
+    tf = np.zeros(len(words_common_text))
+    for i in range(len(game_words_text)):
+        if game_words_text[i] in words_common_index.keys():
+            tf[words_common_index[game_words_text[i]]] = 0.5 + 0.5*game_words_count[i] / max_freq_doc
+
+    return tf*idf
+
 def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
     '''
     Produce a database of word counts, for the (default) 1000 most common words in the overall list
