@@ -256,7 +256,6 @@ def recollect_metacritic_summaries(cur):
         #Update the database
         if summary != '':
             #deal with annoying apostrophes
-            summary = re.sub(r"[^\](')",r"\1\\'",summary)
             if len(summary) > 2000:
                 summary = summary[:2000]
             update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
@@ -264,6 +263,10 @@ def recollect_metacritic_summaries(cur):
                 cur.execute(update_command)
             except mdb.Error, e:
                 print "MySQL Error in command: ",update_command
+                print "Making second attempt..."
+                summary = re.sub(r"'",r"\\'",summary)
+                update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
+                
         time.sleep(1)
         count +=1
         if count == 1:
@@ -287,9 +290,7 @@ if __name__ == '__main__':
         cur = con.cursor()
         make_main_metacritic_database(cur,title, genre_list, game_url)
     
-    print "Adding to the database..."
-    with con:
-        cur = con.cursor()
+        print "Adding to the database..."
         collect_more_metacritic_data_to_database(cur)
 
         print "Updating the summary text to full..."
