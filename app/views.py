@@ -51,11 +51,12 @@ def games_output():
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
     
-    titles, game_types, themes, ratings = recommend_games.run_everything_on_input_title(game,cur)
+    titles, game_types, themes, ratings, sim_ratings = recommend_games.run_everything_on_input_title(game,cur)
 
   games = []
   for i in range(len(titles)):
-    games.append(dict(title=titles[i], game_type=game_types[1], theme=themes[i], rating=ratings[i]))
+    games.append(dict(title=titles[i], game_type=game_types[1], theme=themes[i], rating=ratings[i],
+                      sim_rating=sim_ratings[i]))
 
   return render_template("output.html", games = games)
 
