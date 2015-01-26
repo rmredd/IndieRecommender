@@ -9,7 +9,7 @@ from login_script import login_mysql
 def get_metacritic_game(title,cur):
     #Finds metacritic game in the database
 
-    command = "SELECT title, num_players, genre, summary FROM Metacritic WHERE title = '"+title+"'"
+    command = "SELECT title, genre, summary, single_player, multiplayer, mmo, coop FROM Metacritic WHERE title = '"+title+"'"
     cur.execute(command)
     mygame = cur.fetchall()
 
@@ -18,6 +18,141 @@ def get_metacritic_game(title,cur):
         return []
 
     return mygame[0]
+
+
+def extract_game_type_info(my_game):
+    '''
+    This tests the extracted game information from a metacritic data set for a single game -- essentially
+    attempting to translate this into 
+    '''
+
+    #Initially, metacritic game type and genre info is mixed, so split that up
+    genre_list = my_game[1].split(',')
+    #Make sure each element has white space stripped
+    for i in range(len(genre_list)):
+        genre_list[i] = genre_list[i].strip()
+
+    game_types = []
+    #Getting game type information
+    if 'Shooter' in genre_list:
+        game_types.append('First Person Shooter')
+        game_types.append('Third Person Shooter')
+        game_types.append('Tactical Shooter')
+        game_types.append('Real Time Shooter')
+    if 'Beat Em Up' in genre_list:
+        game_types.append('Hack n Slash')
+        game_types.append('Combat Sim')
+        game_types.append('Fighting')
+    if 'Sports' in genre_list:
+        game_types.append('Baseball')
+        game_types.append('Football')
+        game_types.append('Basketball')
+        game_types.append('Soccer')
+        game_types.append('Wrestling')
+        game_types.append('Golf')
+        game_types.append('Hockey')
+        game_types.append('Alternative Sport')
+    if 'PC-Style RPG' in genre_list or 'Role-Playing' in genre_list:
+        game_types.append('Role Playing')
+    if 'Console-Style RPG' in genre_list:
+        game_types.append('Role Playing')
+    if 'Action RPG' in genre_list:
+        game_types.append('Role Playing')
+    if 'Action Adventure' ni genre_list:
+        game_types.append('Adventure')
+    if 'Platformer' in genre_list:
+        game_types.append('Platformer')
+    if 'Strategy' in genre_list and 'Turn-Based' in genre_list:
+        game_types.append('Turn-Based Strategy')
+        game_types.append('Grand Strategy')
+        game_types.append('Turn-Based Tactics')
+    if 'Strategy' in genre_list and 'Real-Time' in genre_list:
+        game_types.append('Real Time Strategy')
+        game_types.append('Real Time Tactics')
+        game_types.append('Tower Defense')
+    if 'Strategy' in genre_list and 'Real-Time' not in genre_list:
+        if 'Turn-Based' not in genre_list:
+            game_types.append('Real Time Strategy')
+            game_types.append('Turn-Based Strategy')
+            game_types.append('Grand Strategy')
+    if 'Other Strategy Games' in genre_list:
+        game_types.append('Real Time Strategy')
+        game_types.append('Real Time Tactics')
+        game_types.append('Turn-Based Strategy')
+        game_types.append('Grand Strategy')
+        game_types.append('Turn-Based Tactics')
+        game_types.append('Tower Defense')
+    if 'Puzzle' in genre_list or 'Logic' in genre_list:
+        game_types.append('Puzzle Compilation')
+    if 'Virtual Life' in genre_list:
+        game_types.append('Visual Novel')
+        game_types.append('Virtual Life')
+    if 'Driving' in genre_list or 'Racing' in genre_list:
+        game_types.append('Racing')
+        game_types.append('Car Combat')
+    if 'Demolition Derby' in genre_list:
+        game_types.append('Car Combat')
+    if 'Sim' in genre_list or 'Simulation' in genre_list:
+        game_types.append('Realistic Sim')
+        game_types.append('Futuristic Sim')
+    if 'Edutainment' in genre_list:
+        game_types.append('Educational')
+        game_types.append('Family')
+    if 'Arcade' in genre_list or 'Pinball' in genre_list:
+        game_types.append('Arcade')
+    if 'Interactive Movie' in genre_list:
+        game_types.append('Cinematic')
+    if 'Rhythm' in genre_list:
+        game_types.append('Rhythm')
+    if 'Hidden Object' in genre_list:
+        game_types.append('Point and Click')
+    #Check for "roguelike"
+    if re.search(r"roguelike",my_game[2]):
+        game_types.append('Roguelike')
+    #Check for "4X"
+    if re.search(r"4X", my_game[2]):
+        game_types.append('4X')
+
+    genres = []
+    #Getting genre information
+    if 'Sci-Fi' in genre_list:
+        genres.append('Sci-Fi')
+    if 'Fantasy' in genre_list:
+        genres.append('Fantasy')
+    if 'Fighter' in genre_list:
+        genres.append('Fighter')
+    if 'Horror' in genre_list:
+        genres.append('Horror')
+    if 'Historic' in genre_list:
+        genres.append('History')
+        genres.append('Antiquity')
+        genres.append('Medieval')
+    if 'WWII' or 'WWI' in genre_list:
+        genres.append('History')
+        genres.append('War')
+    if 'Nature' in genre_list:
+        genres.append('Nature')
+    if 'Sports' in genre_list:
+        genres.append('Sport')
+    if 'Wargame' in genre_list:
+        genres.append('War')
+
+    #Getting player information
+    players = []
+    if my_game[3] == '1':
+        players.append('single_player')
+    if my_game[4] == '1':
+        players.append('multiplayer')
+    if my_game[5] == '1':
+        players.append('mmo')
+    if my_game[6] == '1':
+        players.append('coop')
+    #If coop is mentioned in the summary description, add it
+    if 'coop' not in players:
+        if re.match(r'cooper', my_game[2]) or re.match(r'co-op', my_game[2]):
+            players.append('coop')
+
+    return game_types, genres, players
 
 
 def get_matching_indie_games(genre, game_type, num_players, cur):
@@ -72,6 +207,7 @@ def run_everything_on_input_title(title, cur):
         
     #Something here for sorting out genre labels
 
+    #Includes matching on a list of options
     game_data, words_list = get_matching_indie_games('Sci-Fi', '%Shooter', 'single_player',cur)
     
     words_list = np.array(words_list)[:,0]
