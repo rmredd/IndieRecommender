@@ -107,10 +107,10 @@ def get_num_docs_with_words(words_index, words_list):
     list of words across the game summaries corpus
     '''
 
-    words_ndocs = np.zeros(len(words_common)).astype(int)
+    words_ndocs = np.zeros(len(words_index)).astype(int)
 
     for words_set in words_list:
-        words_ndocs_tmp = np.zeros(len(words_common)).astype(int)
+        words_ndocs_tmp = np.zeros(len(words_index)).astype(int)
         for word in words_set:
             if word in words_index:
                 words_ndocs_tmp[words_index[word]] = 1
