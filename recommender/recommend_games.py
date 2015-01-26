@@ -227,7 +227,7 @@ def get_words_distance(words_indie_single, words_vector):
     '''
     Gets the angle between the word vectors
     '''
-    dist = np.sum( (words_indie_single - words_vector)**2 )
+    dist = np.sum( words_indie_single*words_vector) / np.sqrt(np.sum(words_indie_single**2)) / np.sqrt(np.sum(words_vector**2))
     return dist
 
 def get_all_words_distance(words_indie_matrix, words_vector):
