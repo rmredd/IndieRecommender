@@ -58,5 +58,5 @@ def games_output():
     games.append(dict(title=titles[i], game_type=game_types[1], theme=themes[i], rating=ratings[i],
                       sim_rating=sim_ratings[i]))
 
-  return render_template("output.html", games = games)
+  return render_template("output.html", big_game = game, games = games)
 

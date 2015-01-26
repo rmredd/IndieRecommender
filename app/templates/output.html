@@ -71,33 +71,10 @@
 
    </div><!-- /.container -->
 
-  <div class="container">
-    <div class="starter-template">
-        <h2>Output Page</h2>
-        <p>Enter some user input</p>
-    </div>
-
-    <div class = "container">
-
-      <form  action="/output" method="GET">
-        <div class="form-group">
-          <label for="ID">Game Title:</label>
-          <input type="text" id="ID" name='ID' placeholder="e.g. ">
-        </div>
-        <div>
-          <button type="submit" class="btn btn-default btn-lg">Find this game!</button>
-        </div>
-      </form>
-    </div>
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-
-  </div> <!-- /.container-->
-
     <div class="container">
       <div class="starter-template">
         <h3>Results:</h3>
-        <p class="lead">Below is the result of your query.<br> You might like these indie games.</p>
+        <p class="lead">Here are some Indie games that may be similar to {{ big_game }}.</p>
       </div>
 
       <table class="table table-hover">
@@ -108,6 +85,39 @@
       </table>
 
     </div><!-- /.container -->
+
+  <div class="container">
+    <div class="starter-template">
+        <h2>Look For Another Game</h2>
+    </div>
+
+    <div class = "container">
+
+      <form  action="/output" method="GET">
+        <div class="form-group">
+          <label for="ID">Game Title:</label>
+          <input type="text" id="ID" name='ID' placeholder="e.g. ">
+        </div>
+        <div>
+          <button type="submit" class="btn btn-default btn-lg">Suggest more games</button>
+        </div>
+      </form>
+    </div>
+    <br> If you like, specify a platform: <br>
+
+<div class="row">
+  <div class="col-lg-6">
+        <input type="checkbox" aria-label="Platform"> Windows
+        <input type="checkbox" aria-label="Platform"> Mac
+        <input type="checkbox" aria-label="Platform"> Linux
+  </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+  </div> <!-- /.container-->
 
 
    <!-- Bootstrap core JavaScript
