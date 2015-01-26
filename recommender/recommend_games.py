@@ -237,6 +237,11 @@ def get_all_words_distance(words_indie_matrix, words_vector):
     for i in range(len(words_indie_matrix)):
         dist[i] = get_words_distance(words_indie_matrix[i], words_vector)
 
+    #Deal with nan results
+    nan_list = np.where( np.isnan(dist) )[0]
+    if len(nan_list) > 0:
+        dist[nan_list] = 0.*nan_list
+
     return dist
 
 def run_everything_on_input_title(title, cur, nvalues=5):
@@ -279,6 +284,7 @@ def run_everything_on_input_title(title, cur, nvalues=5):
     rating_subset = np.where( (rating > 7) & (votes > 20))[0]
 
     sorted = rating_subset[np.argsort(similarity_rating[rating_subset])]
+    sorted = sorted[::-1]
 
     game_data_arr = np.array(game_data)
 
