@@ -124,7 +124,7 @@ def get_idf(ndocs, words_ndocs):
     Includes handling for case where term does not appear
     '''
 
-    idf = np.log(ndocs/(1+float(words_ndocs)))
+    idf = np.log(ndocs/(1+words_ndocs.astype(float)))
 
     return idf
 
@@ -144,9 +144,9 @@ def get_tf_idf(words_index, game_words, idf):
     max_freq_doc = np.max(game_words_count)
 
     #Term frequency
-    tf = np.zeros(len(words_common_text))
+    tf = np.zeros(len(words_index))
     for i in range(len(game_words_text)):
-        if game_words_text[i] in words_common_index.keys():
+        if game_words_text[i] in words_index.keys():
             tf[words_index[game_words_text[i]]] = 0.5 + 0.5*game_words_count[i] / max_freq_doc
 
     return tf*idf
@@ -213,6 +213,7 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
         cur.execute(insert_command)
 
     #Create a shorter table for saving the baseline idf values
+    cur.execute("DROP TABLE IF EXISTS idf_vals")
     create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT"
     for i in range(nwords):
         create_command += ", stem_" + words_common_text[i] + " FLOAT"
