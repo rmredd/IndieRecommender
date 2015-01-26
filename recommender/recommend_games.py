@@ -152,6 +152,10 @@ def extract_game_type_info(my_game):
         if re.match(r'cooper', my_game[2]) or re.match(r'co-op', my_game[2]):
             players.append('coop')
 
+    #Make sure we've got unique lists
+    game_types = np.unique(game_types)
+    genres = np.unique(genres)
+
     return game_types, genres, players
 
 
@@ -164,9 +168,44 @@ def get_matching_indie_games(genre, game_type, num_players, cur):
     select_command = "SELECT Games.title, Games.rating, Games.votes, Games.theme, Games.game_type "
     for word in words_list[2:]:
         select_command += ", Summary_words."+word[0]
-    select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id WHERE "
-    select_command += num_players+"= 1 AND "
-    select_command += "Games.theme = '"+genre+"' AND Games.game_type LIKE '"+game_type+"' ORDER BY Games.votes DESC"
+    select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id"
+
+    #If we're doing any additional selections, add a where statement
+    if len(genre) > 0 or len(game_type) > 0 or len(num_players) > 0:
+        select_command += " WHERE "
+
+    #Select on the number of players
+    if len(num_players) == 1:
+        select_command += "Games."+num_players[0]+"= 1 "
+    if len(num_players) > 1:
+        select_command += "(Games."+num_players[0]+"=1 "
+        for player in num_players[1:]:
+            select_command += " OR Games."+player+"=1"
+        select_command += ") "
+    #Add additional and statement if necessary
+    if len(num_players) > 0 and (len(game_type) > 0 or len(genre) > 0):
+        select_command += " AND "
+
+    #Set up the game type selection
+    if len(game_type) == 1:
+        select_command += "Games.game_type = '"+game_type[0]+"'"
+    if len(game_type) > 1:
+        select_command += "(Games.game_type = '"+game_type[0]+"'"
+        for some_type in game_type[1:]:
+            select_command += " OR Games.game_type = '"+some_type+"'"
+        select_command += ")"
+    if len(game_type) > 0 and len(genre) > 0:
+        select_command += " AND "
+
+    #And, finally, genre selection
+    if len(genre) == 1:
+        select_command += "Games.theme = '"+genre[0]+"'"
+    if len(genre) > 1:
+        select_command += "(Games.theme = '"+genre[0]+"'"
+        for some_genre in genre[1:]:
+            select_command += " OR Games.theme = '"+some_genre+"'"
+        select_command += ")"
+
     cur.execute(select_command)
     game_data = cur.fetchall()
 
@@ -205,10 +244,11 @@ def run_everything_on_input_title(title, cur):
     '''
     my_game = get_metacritic_game(title,cur)
         
-    #Something here for sorting out genre labels
+    #Sort out the game type and genre labels
+    game_types, genres, players = extract_game_type_info(my_game)
 
     #Includes matching on a list of options
-    game_data, words_list = get_matching_indie_games('Sci-Fi', '%Shooter', 'single_player',cur)
+    game_data, words_list = get_matching_indie_games(genres, game_types, players,cur)
     
     words_list = np.array(words_list)[:,0]
 
