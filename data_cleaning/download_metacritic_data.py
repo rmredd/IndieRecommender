@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import urllib
+import urllib2
 import json
 import numpy as np
 import re
@@ -210,7 +211,48 @@ def collect_more_metacritic_data_to_database(cur):
 
 def recollect_metacritic_summaries(cur):
     '''
+    For each item in the database, pull the metacritics URL and get the full summary text
     '''
+
+    user_agent = "Firefox/2.0.0.11"
+
+    cur.execute("SELECT Id, url FROM Metacritic")
+    fetched = cur.fetchall()
+
+    for Id, url in fetched:
+        try:
+            ufile = urllib.open(url)
+            #Get the url, and check the new one for data
+            checked_url = ufile.geturl()
+            ufile = urllib.open(checked_url)
+            text = ufile.read()
+        except:
+            print "Unable to locate URL for ", url
+            continue
+        #Check to see if we've been forbidden
+        if re.match(r"Error 403 Forbidden",text):
+            print "Issue -- access forbidden?"
+            print text
+            break
+            
+        #Find the expanded text blurb
+        sum_match = re.match(r'class="blurb blurb_expanded".*?>([\w\W]*).*?</span>',text)
+        if sum_match:
+            summary = sum_match.group(1)
+        else:
+            sum_match = re.match(r'class="blurb.*?>([\w\W]*.*?</span>)',text)
+            if sum_match:
+                summary = sum_match.group(1)
+            else:
+                summary = ""
+                print "Something failed: ", Id, url
+                print text
+                break
+
+        #Update the database
+        if summary != '':
+            update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
+
     return
 
 
