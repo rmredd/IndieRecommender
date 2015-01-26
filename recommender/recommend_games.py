@@ -211,19 +211,22 @@ def get_matching_indie_games(genre, game_type, num_players, cur):
 
     return game_data, words_list[2:]
 
-def make_metacritic_game_words_vector(summary, words_list):
-    #Clean it to 
+def make_metacritic_game_words_vector(summary, words_index, idf):
+    '''
+    Make the tf-idf vector for a single game
+    Does so from a summary and the dict of words and indices being used
+    Note that this requires the idf to be read in from the database earlier
+    '''
+
     clean_summary = clean_text.clean_summary_text(summary)
     my_words = clean_text.get_word_stems(clean_summary)
 
-    words_vector = np.zeros(len(words_list))
-    for i in range(len(words_list)):
-        if words_list[i][5:] in my_words:
-            words_vector[i] = 1
-        
-    return words_vector
+    return clean_text.get_tf_idf(words_index, my_words, idf)
 
 def get_words_distance(words_indie_single, words_vector):
+    '''
+    Gets the angle between the word vectors
+    '''
     dist = np.sum( (words_indie_single - words_vector)**2 )
     return dist
 
