@@ -83,7 +83,7 @@ def extract_game_type_info(my_game):
         game_types.append('Grand Strategy')
         game_types.append('Turn-Based Tactics')
         game_types.append('Tower Defense')
-    if 'Puzzle' in genre_list or 'Logic' in genre_list:
+    if 'Puzzle' in genre_list or 'Logic' in genre_list or re.search(r'puzzle',my_game[2]):
         game_types.append('Puzzle Compilation')
     if 'Virtual Life' in genre_list:
         game_types.append('Visual Novel')
@@ -156,8 +156,6 @@ def extract_game_type_info(my_game):
     #Make sure we've got unique lists
     game_types = np.unique(game_types)
     genres = np.unique(genres)
-
-    print genres
 
     return game_types, genres, players
 
