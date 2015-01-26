@@ -128,7 +128,7 @@ def extract_game_type_info(my_game):
         genres.append('History')
         genres.append('Antiquity')
         genres.append('Medieval')
-    if 'WWII' or 'WWI' in genre_list:
+    if 'WWII' in genre_list or 'WWI' in genre_list:
         genres.append('History')
         genres.append('War')
     if 'Nature' in genre_list:
@@ -156,6 +156,8 @@ def extract_game_type_info(my_game):
     #Make sure we've got unique lists
     game_types = np.unique(game_types)
     genres = np.unique(genres)
+
+    print genres
 
     return game_types, genres, players
 
