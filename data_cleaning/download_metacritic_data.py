@@ -88,12 +88,11 @@ def make_main_metacritic_database(cur, title, genre_list, game_url):
 
     #Clear the table if it's already been made
     cur.execute('DROP TABLE IF EXISTS Metacritic')
-    cur.execute('CREATE TABLE Metacritic(Id INT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(100), meta_rating FLOAT, num_critic INT, user_rating FLOAT, num_users INT, num_players INT, genre VARCHAR(100), summary VARCHAR(2000), reviews VARCHAR(2000), url VARCHAR(200))')
+    cur.execute('CREATE TABLE Metacritic(Id INT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(100), meta_rating FLOAT, num_critics INT, user_rating FLOAT, num_users INT, genre VARCHAR(100), summary VARCHAR(2000), reviews VARCHAR(2000), url VARCHAR(200), single_player BOOL, multiplayer BOOL, mmo BOOL, coop BOOL)')
     
     for i in range(len(title)):
         insert_command = "INSERT INTO Metacritic(title, genre, url) VALUES ('"+title[i]+"'"
         insert_command += ", '"+genre_list[i]+"', '"+game_url[i]+"')"
-        print insert_command
         try:
             cur.execute(insert_command)
         except mdb.Error, e:
@@ -102,6 +101,26 @@ def make_main_metacritic_database(cur, title, genre_list, game_url):
             break
 
     return
+
+def get_num_player_code(num_players):
+    '''
+    Converts text number of players to a set of integer codes
+    Corresponds to single, multi, mmo, coop labels
+    '''
+    num_player_code = np.zeros(4)
+    if num_players == '1 Player':
+        num_player_code[0] = 1
+    if num_players == 'Massively Multiplayer':
+        num_player_code[2] = 1
+    num_player_split = num_players.split('-')
+    if len(num_player_split) == 2:
+        if num_player_split[0] == '1':
+            num_player_code[0] = 1
+        num_player_code[1] = 1
+    if num_players[-6:] == 'Online':
+        num_player_code[1] = 1
+
+    return num_player_code
 
 def collect_more_metacritic_data_to_database(cur):
     '''
@@ -117,14 +136,81 @@ def collect_more_metacritic_data_to_database(cur):
         results = read_single_dataset_from_kimono(more_info_url,apikey,2500*i)
         results = results['collection1']
 
-        #For each element, first extract the data elements
-        
-        #Figure out the ID of this game in the database
-        
-        #Insert the genre list if it does not already exists (string with len 0)
+        for j in range(len(results)):
+            #For each element, first extract the data elements
+            title = re.sub(r"'",r"\\'",results[j]['title']['text'])
+            if 'user_score' in results[j].keys():
+                user_score = results[j]['user_score']['text']
+                num_users = results[j]['num_users']
+            else:
+                user_score = '-1'
+                num_users = '0'
+            if 'metascore' in results[j].keys():
+                meta_score = results[j]['metascore']['text']
+                num_critics = results[j]['num_critics'].split()[0]
+            else:
+                meta_score = -1
+                num_critics = '0'
+            genre = re.sub(r"'",r"\\'",title_cleanup.replace_right_quote(results[j]['genre']))
+            if 'num_players' in results[j].keys():
+                num_players = results[j]['num_players']
+            else:
+                num_players = ''
+            if 'Summary' in results[j].keys():
+                if type(results[j]['Summary']) == dict:
+                    summary = re.sub(r"'",r"\\'",title_cleanup.replace_right_quote(results[j]['Summary']['text']))
+                else:
+                    summary = re.sub(r"'",r"\\'",title_cleanup.replace_right_quote(results[j]['Summary']))
+            else:
+                summary = ''
 
-        #Add the remaining data
+            #Do some processing -- assign the number of players
+            num_player_code = get_num_player_code(num_players)
 
+            #Figure out the ID of this game in the database
+            cur.execute("SELECT Id, genre FROM Metacritic WHERE title = '" + title + "'")
+            fetched = cur.fetchall()
+            if len(fetched) > 1:
+                print "Warning: more than one game title matched "+title
+            fetched = fetched[0]
+            fetched_id = fetched[0]
+            fetched_genre = fetched[1]
+
+            #Don't change the genre if the fetched genre is more detailed
+            if len(fetched_genre) > len(genre):
+                genre = re.sub(r"'",r"\\'",fetched_genre)
+
+            #Add the remaining data
+            update_command = "UPDATE Metacritic SET "
+            update_command += "user_rating = "+str(user_score)
+            update_command += ", num_users = "+str(num_users)
+            update_command += ", meta_rating = "+str(meta_score)
+            update_command += ", num_critics = "+num_critics
+            update_command += ", genre = '"+genre+"'"
+            update_command += ", summary = '"+summary+"'"
+            update_command += ", single_player = "+str(num_player_code[0])
+            update_command += ", multiplayer = "+str(num_player_code[1])
+            update_command += ", mmo = "+str(num_player_code[2])
+            update_command += ", coop = "+str(num_player_code[3]) 
+            update_command += " WHERE Id = "+str(fetched_id)
+
+            #Run a final cleanup, to handle any unicode stupidity
+            update_command = title_cleanup.replace_right_quote(update_command)
+
+            try:
+                cur.execute(update_command)
+            except mdb.Error, e:
+                print "Item", j, "Error in MySQL command which follows: "
+                print update_command
+                print e
+                break
+
+    return
+
+
+def recollect_metacritic_summaries(cur):
+    '''
+    '''
     return
 
 
@@ -133,12 +219,17 @@ if __name__ == '__main__':
     con = login_mysql("../login.txt")
 
     #Read the data in
-    title, creator, release_date, engine, rating, votes, game_type, theme, players, platform, description = collect_indiedb_data()
+    print "Getting the first set of data"
+    title, genre_list, game_url = collect_basic_metacritic_data()
 
-    print "Creating the database..."
+    print "Creating the initial database..."
     with con:
-        cursor = con.cursor()
-        cleanup_and_put_in_database(title, creator, release_date, engine, rating, votes, game_type, theme, players, platform, description,
-                                    cursor)
-        
+        cur = con.cursor()
+        make_main_metacritic_database(cur,title, genre_list, game_url)
     
+    print "Adding to the database..."
+    with con:
+        cur = con.cursor()
+        collect_more_metacritic_data_to_database(cur)
+
+    print "Updating the summary text to full..."
