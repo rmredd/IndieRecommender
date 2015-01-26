@@ -76,7 +76,7 @@ def collect_basic_metacritic_data():
         for j in range(len(results)):
             title.append(results[j]['Title']['text'])
             game_url.append(results[j]['Title']['href'])
-            genre_list.append( clean_genre_list(results[i]['Genre list']))
+            genre_list.append( clean_genre_list(results[j]['Genre list']))
             
     return title, genre_list, game_url
 
