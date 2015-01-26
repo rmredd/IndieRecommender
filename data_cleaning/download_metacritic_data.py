@@ -24,109 +24,6 @@ def read_single_dataset_from_kimono(address,apikey,koffset):
     #Only return the relevant parts of the data structure
     return results['results']
 
-def print_urllist():
-    '''
-    Prints list of indieDB sites from the Kimono input
-    Prints to a text file labeled 'gamelist.txt'
-    '''
-
-    address = "https://www.kimonolabs.com/api/7jleppae"
-    #My API key -- currently hard-coded
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
-
-    f = open('gamelist.txt','w')
-    
-
-    for i in range(5):
-        results = read_single_dataset_from_kimono(address,apikey,i*2500)
-        print "Found ",len(results['collection1'])," results."
-
-        for j in range(len(results['collection1'])):
-            print >> f, 2500*i+j, title_cleanup.replace_right_quote(results['collection1'][j]['property1']['text']),' , ', results['collection1'][j]['property1']['href']
-
-    f.close()
-
-    return
-
-
-def collect_indiedb_data():
-    '''
-    Runs through all kimono retrieved indiedb games, and returns the resulting lists
-    Note that this removes duplicates, and removes unicode beyond ascii encoding
-
-    Also notes which games have been dropped from the list
-
-    API key and address are currently hard-coded
-    '''
-    
-    games_url = "https://www.kimonolabs.com/api/dhngio36"
-    #My API key -- currently hard-coded
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
-
-    #Set up the empty lists
-    title = []
-    creator = []
-    release_date = []
-    engine = []
-    rating = []
-    votes = []
-    game_type = []
-    theme = []
-    players = []
-    platform = []
-    description = []
-
-    for i in range(5):
-        results = read_single_dataset_from_kimono(games_url,apikey,2500*i)
-        results = results['collection1']
-        for j in range(len(results)):
-            #Check to see if this is a duplicate
-            if len(title) > 0:
-                if title[-1] == title_cleanup.replace_right_quote(results[j]['Title']['text']):
-                    #Duplicate case
-                    #Check to see if the duplicate has some information that we're missing otherwise
-                    if 'Maker_release' in results[j].keys() and creator[-1] == '':
-                        creator[-1] = results[j]['Maker_release']['text'].split('|')[0]
-                    if 'Sumtext' in results[j].keys() and description[-1] == '':
-                        description[-1] = results[j]['Sumtext']
-                    if 'Releasedate' in results[j].keys():
-                        try:
-                            release_date[-1] = results[j]['Releasedate'][9:]
-                        except TypeError:
-                            #Fix the problem using other data if we can
-                            if 'Maker_release' in results[j].keys():
-                                release_date[-1] = results[j]['Maker_release']['text'].split('|')[1][10:]
-                    continue
-            #Not a duplicate
-            title.append(title_cleanup.replace_right_quote(results[j]['Title']['text']))
-            #Some data points failed to get the creator name
-            if 'Maker_release' in results[j].keys():
-                creator.append(results[j]['Maker_release']['text'].split('|')[0])
-            else:
-                creator.append('')
-            #Catch errors in reading the release date
-            try:
-                release_date.append(results[j]['Releasedate'][9:])
-            except TypeError:
-                if 'Maker_release' in results[j].keys():
-                    release_date.append(results[j]['Maker_release']['text'].split('|')[1][10:])
-                else:
-                    release_date.append('')
-            engine.append(results[j]['Engine']['text'])
-            rating.append(results[j]['Avg Rating'])
-            votes.append(results[j]['Votecount'].split()[0])
-            game_type.append(results[j]['Type'])
-            theme.append(results[j]['Theme'])
-            players.append(results[j]['Players'])
-            platform.append(results[j]['Platform']['text'])
-            #Some data points are missing the summary text
-            if 'Sumtext' in results[j].keys():
-                description.append(results[j]['Sumtext'])
-            else:
-                description.append('')
-
-    return title, creator, release_date, engine, rating, votes, game_type, theme, players, platform, description
-
 def split_list(text_list):
     '''
     Splits a comma-separated list of items and returns them with white space removed
@@ -139,45 +36,77 @@ def split_list(text_list):
 
     return values
 
-def get_tidy_modes_list(players):
-    #Split the players into separate categories, and give 0 or 1 for whether that mode exists
-    play_mode = np.zeros([len(players), 4]) #Columns are single, multiplayer, coop, MMO
-    for i in range(len(players)):
-        clean_play = split_list(players[i])
-        if 'Single' in clean_play or 'Single Player' in clean_play:
-            play_mode[i,0] = 1
-        if 'Multiplayer' in clean_play:
-            play_mode[i,1] = 1
-        if 'Co-op' in clean_play:
-            play_mode[i,2] = 1
-        if 'MMO' in clean_play:
-            play_mode[i,3] = 1
+def clean_genre_list(genre_text):
+    '''
+    Cleans a CSV text list of genres to eliminate duplicates
+    '''
+    
+    words_list = split_list(genre_text)
 
-    return play_mode
+    unique_words_list = np.unique(words_list)
 
-def get_tidy_platform(platform):
-    #Get the list of possible platforms
-    #Get the unique listing first
-    temp_unique = np.unique(platform)
-    #Break this down by comma-separated platforms
-    uniq_p_list = []
-    for some_plats in temp_unique:
-        split_plats = split_list(some_plats)
-        for plat in split_plats:
-            uniq_p_list.append(plat)
-    #Get the final uniq results
-    plat_list = np.unique(uniq_p_list)
-    nplats = len(plat_list)
+    short_genre_text = unique_words_list[0]
+    for word in unique_words_list[1:]:
+        short_genre_text += ", "+word
+    
+    return short_genre_text
 
-    #Now, tidy up
-    clean_plats = np.zeros([len(platform),nplats])
-    for i in range(len(platform)):
-        single_platform_list = split_list(platform[i])
-        for j in range(nplats):
-            if plat_list[j] in single_platform_list:
-                clean_plats[i,j] = 1
+def collect_basic_metacritic_data():
+    '''
+    Runs through all kimono retrieved metacritic games, and returns the resulting lists of information
+    Note that this also checked for missed values
 
-    return clean_plats, plat_list
+    API key and address are currently hard-coded
+    '''
+    
+    games_url = "https://www.kimonolabs.com/api/5obxxzg8"
+    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+    
+    #Set up the empty lists for the first batch
+    title = []
+    genre_list = []
+    game_url = []
+
+    #Read the most basic data set first
+    
+    for i in range(2):
+        results = read_single_dataset_from_kimono(games_url,apikey,2500*i)
+        results = results['collection1']
+
+        for j in range(len(results)):
+            title.append(results[j]['Title']['text'])
+            game_url.append(results[j]['Title']['href'])
+            genre_list.append( clean_genre_list(results[i]['Genre list']))
+            
+    return title, genre_list, game_url
+
+def make_main_metacritic_database(cur, title, genre_list, game_url):
+    '''
+    Adds the main initial set of data to the database (title, genres, game_url)
+    Requires cursor input
+    '''
+
+    #Clear the table if it's already been made
+    cur.execute('DROP TABLE IF EXISTS Metacritic')
+    cur.execute('CREATE TABLE Metacritic(Id INT AUTO_INCREMENT, title VARCHAR(100), meta_rating FLOAT, num_critic INT, user_rating FLOAT, num_users INT, num_players INT, genre VARCHAR(60), summary VARCHAR(2000), reviews VARCHAR(2000), url VARCHAR(200))')
+    
+    for i in len(title):
+        insert_commaned = "INSERT INTO Metacritic(title, genre, url) VALUES ('"+title[i]+"'"
+        insert_command += ", '"+genre_list[i]+"', '"+game_url[i]+"')"
+        cur.execute(insert_command)
+
+    return
+
+def collect_more_metacritic_data_to_database(cur):
+    '''
+    Add additional data to the database using the second API
+    '''
+
+    more_info_url = "https://www.kimonolabs.com/api/3v3rrxjc"
+    #My API key -- currently hard-coded
+    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+
+    return
 
 def cleanup_and_put_in_database(title, creator, release_date, engine, rating, votes, game_type, theme, players, platform, description,
                                 cursor):
@@ -287,47 +216,6 @@ def cleanup_and_put_in_database(title, creator, release_date, engine, rating, vo
 
     return
         
-
-def create_description_table(description, cursor):
-    '''
-    Creation and cleanup for just the raw description data table
-    '''
-    ngames = len(description)
-
-    #Save plain text descriptions in a second table
-    cursor.execute("DROP TABLE IF EXISTS Game_descr")
-    cursor.execute("CREATE TABLE Game_descr(Id INT PRIMARY KEY AUTO_INCREMENT, game_id INT, description VARCHAR(2001))")
-    for i in range(ngames):
-        if description[i] != '':
-            if type(description[i]) == dict:
-                my_descript = re.sub(r"\'",r"\\'",description[i]['text'])
-            else:
-                my_descript = re.sub(r"\'",r"\\'",description[i])
-            my_descript = my_descript.encode('ascii','backslashreplace')
-            my_descript = re.sub(r'\\u\d\d\d\d',r'',my_descript)
-        else:
-            my_descript = 'BLANK'
-
-        if len(my_descript) > 2000:
-            my_descript = my_descript[:2000]
-
-        insert_statement = "INSERT INTO Game_descr(game_id, description) VALUES ("+str(i+1)+",'"+my_descript+"')"
-        print i, insert_statement
-        try:
-            cursor.execute(insert_statement)
-        except UnicodeEncodeError:
-            print "Unicode issues, sorry."
-            print my_descript
-            break
-        except mdb.Error, e:
-            print "Failed insert statement: "
-            print insert_statement
-            print e
-            break
-
-    print "Table insertion complete"
-
-    return
 
 if __name__ == '__main__':
     #Getting mysql login data
