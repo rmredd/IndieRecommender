@@ -129,7 +129,7 @@ def get_idf(ndocs, words_ndocs):
 
     return idf
 
-def get_tf_idf(words_common_index, game_words, idf):
+def get_tf_idf(words_index, game_words, idf):
     '''
     Get the tf-idf values for a single game's words
     Requires input of idf (which is the same for all documents) and the list of words in the game summary
@@ -148,7 +148,7 @@ def get_tf_idf(words_common_index, game_words, idf):
     tf = np.zeros(len(words_common_text))
     for i in range(len(game_words_text)):
         if game_words_text[i] in words_common_index.keys():
-            tf[words_common_index[game_words_text[i]]] = 0.5 + 0.5*game_words_count[i] / max_freq_doc
+            tf[words_index[game_words_text[i]]] = 0.5 + 0.5*game_words_count[i] / max_freq_doc
 
     return tf*idf
 
@@ -178,12 +178,16 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
     #Create a dictionary object for sorting out words later
     words_common_index = dict([])
     for i in range(nwords):
-            words_common_index[words_common_text[i]] = i
+        words_common_index[words_common_text[i]] = i
 
-    #Create a table with columns for game id and word counts
+    #Make the idf weights
+    words_ndocs = get_num_docs_with_words(words_common_index, words_list)
+    idf = get_idf(ndocs, words_ndocs)
+
+    #Create a table with columns for game id and word weights
     create_command = "CREATE TABLE Summary_words(Id INT PRIMARY KEY AUTO_INCREMENT, game_id INT "
     for i in range(nwords):
-        create_command += ", stem_" + words_common_text[i] + " INT"
+        create_command += ", stem_" + words_common_text[i] + " FLOAT"
     create_command += ")"
     print create_command
     cur.execute(create_command)
@@ -196,21 +200,15 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
 
     #Now, loop over all entries
     for i in range(len(words_list)):
-        if i % 5000 == 0:
+        if i % 1000 == 0:
             print "Finished through ", i
 
-        my_words = pd.Series(words_list[i])
-        #Count words
-        my_words = my_words.value_counts()
-        words_count = np.zeros(nwords)
-        for j in range(len(my_words)):
-            if my_words.index[j] in words_common_text:
-                words_count[words_common_index[my_words.index[j]]] = my_words[j]
+        tf_idf = get_tf_idf(words_common_index,words_list[i], idf)
         
         #Create the rest of the insertion command
         insert_command = insert_base_command + str(game_ids[i])
         for j in range(nwords):
-            insert_command += ", "+str(words_count[j])
+            insert_command += ", "+str(tf_idf[j])
         insert_command += ")"
 
         cur.execute(insert_command)
