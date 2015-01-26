@@ -255,8 +255,15 @@ def recollect_metacritic_summaries(cur):
 
         #Update the database
         if summary != '':
+            #deal with annoying apostrophes
+            summary = re.sub(r"'",r"\\'",summary)
+            if len(summary) > 2000:
+                summary = summary[:2000]
             update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
-            cur.execute(update_command)
+            try:
+                cur.execute(update_command)
+            except mdb.Error, e:
+                print "MySQL Error in command: ",update_command
         time.sleep(1)
         count +=1
         if count == 1:
@@ -287,3 +294,5 @@ if __name__ == '__main__':
 
         print "Updating the summary text to full..."
         recollect_metacritic_summaries(cur)
+
+    print "Mission accomplished."
