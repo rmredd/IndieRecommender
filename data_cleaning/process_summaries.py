@@ -102,14 +102,16 @@ def get_words_from_database(cur):
 
     return words_list, game_ids
 
-def produce_database_of_common_words(words_list, game_ids, cur):
+def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
     '''
-    Produce a database of word counts, for the 1000 most common words in the overall list
+    Produce a database of word counts, for the (default) 1000 most common words in the overall list
     Note also requires cursor as input
     '''
 
+    #Get the number of documents (=number of indie games)
+    ndocs = len(words_list)
+    
     #Get the list of all words
-
     cur.execute('DROP TABLE IF EXISTS Summary_words')
     
     print "Getting overall word list.  This may take a little while..."
@@ -118,9 +120,9 @@ def produce_database_of_common_words(words_list, game_ids, cur):
 
     print "Moving on..."
     #Get the 1000 most common words
-    nwords = 1000
     words_common = words_series.value_counts()
     words_common_text = words_common.index[:nwords]
+    words_common_count = words_common[:nwords]
     print "Total number of words (non-unique): ",len(all_words)
     print "Common words: ",words_common_text
     #Create a dictionary object for sorting out words later
