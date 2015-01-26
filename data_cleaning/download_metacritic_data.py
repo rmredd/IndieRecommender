@@ -5,6 +5,7 @@ import urllib2
 import json
 import numpy as np
 import re
+import time
 
 import MySQLdb as mdb
 
@@ -219,13 +220,13 @@ def recollect_metacritic_summaries(cur):
     cur.execute("SELECT Id, url FROM Metacritic")
     fetched = cur.fetchall()
 
+    count = 0
     for Id, url in fetched:
         try:
-            ufile = urllib.open(url)
-            #Get the url, and check the new one for data
-            checked_url = ufile.geturl()
-            ufile = urllib.open(checked_url)
-            text = ufile.read()
+            request = urllib2.Request(url)
+            opener = urllib2.build_opener()
+            request.add_header('User-Agent', user_agent)
+            text = opener.open(request).read()
         except:
             print "Unable to locate URL for ", url
             continue
@@ -236,22 +237,32 @@ def recollect_metacritic_summaries(cur):
             break
             
         #Find the expanded text blurb
-        sum_match = re.match(r'class="blurb blurb_expanded".*?>([\w\W]*).*?</span>',text)
+        sum_match = re.search(r'class="blurb blurb_expanded".*?>([\w\W]*?)</span>',text)
         if sum_match:
             summary = sum_match.group(1)
         else:
-            sum_match = re.match(r'class="blurb.*?>([\w\W]*.*?</span>)',text)
+            sum_match = re.search(r'class="blurb.*?>([\w\W]*?)</span>',text)
             if sum_match:
                 summary = sum_match.group(1)
             else:
-                summary = ""
-                print "Something failed: ", Id, url
-                print text
-                break
+                sum_match = re.search(r'meta property="og:description" content="([\w\W]*?)>',text)
+                if sum_match:
+                    summary = sum_match.group(1)
+                else:
+                    summary = ""
+                    print "Something failed: ", Id, url
+                    continue
 
         #Update the database
         if summary != '':
             update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
+            cur.execute(update_command)
+        time.sleep(1)
+        count +=1
+        if count == 1:
+            print count, summary
+        if count % 100 == 0:
+            print "Finished through ",count
 
     return
 
@@ -274,4 +285,5 @@ if __name__ == '__main__':
         cur = con.cursor()
         collect_more_metacritic_data_to_database(cur)
 
-    print "Updating the summary text to full..."
+        print "Updating the summary text to full..."
+        recollect_metacritic_summaries(cur)
