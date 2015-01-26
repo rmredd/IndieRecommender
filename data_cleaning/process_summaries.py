@@ -2,7 +2,6 @@
 
 import numpy as np
 import re
-import sklearn
 import nltk
 import MySQLdb as mdb
 import pandas as pd
