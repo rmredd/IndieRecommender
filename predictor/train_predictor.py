@@ -105,15 +105,19 @@ def estimate_threshold(success_prediction, success):
     Estimates the best threshold to use for predictive purposes, based on F1 score
     '''
 
-    return threshold
+    thresholds = np.array(range(100))*0.01
+    f1_test = np.zeros_like(thresholds)
+    for i in range(len(thresholds)):
+        success_binary = np.zeros_like(success_prediction)
+        success_binary[np.where(success_prediction > thresholds[i])[0]] += 1
+        f1_test[i] = f1_score(success_binary, success)
+    return thresholds[np.argmax(f1_test)]
 
 def run_generalized_training_and_test(game_matrix, success, lambda_reg, training_function, cost_function):
     '''
     Given input data and a chosen algorithm, does training and test; returns fit parameters
     Note that this is generalized, so different algorithms can be tested; assumes that inputs to the
     training function are game_matrix, success, and lambda_reg (or another single scalar value)
-
-    This also produces an estimate of the threshold to use for the best performance
     '''
 
     ngames = len(game_matrix)
@@ -142,12 +146,36 @@ def run_generalized_training_and_test(game_matrix, success, lambda_reg, training
 
     return parameters
 
-def store_parameters_in_database():
+def store_parameters_in_database(name, threshold, year_avg, parameters, feature_list, cur, remake_table=False):
     '''
     Stores a single set of fitting parameters in a database
     
     This also stores the offset used in the year data, and the prediction threshold
+    The first parameter is the name for the metric the parameters are based on, and will
+    be the name entered in the database
+    The last input parameter is a cursor for the relevant database
+    
+    Finally, there's a flag for making the table anew, if the parameter set changes
     '''
+
+    if remake_table:
+        cur.execute("DROP TABLE IF EXISTS Parameters")
+        create_command = "CREATE TABLE Parameters(Id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(40), threshold FLOAT, year_avg FLOAT"
+        for feature in feature_list:
+            create_command += ", "+feature+" FLOAT"
+        create_command += ")"
+        cur.execute(create_command)
+
+    #Insert this set of parameter values into the table
+    insert_command = "INSERT INTO Parameters (name, threshold, year_avg"
+    for feature in feature_list:
+        insert_command += ", "+feature
+    insert_command += ") VALUES ('"+name+"', "+str(threshold)+", "+str(year_avg)
+    for parameter in parameters:
+        insert_command += ", "+str(parameter)
+    insert_command += ")"
+    cur.execute(insert_command)
+
     return
 
 if __name__ == '__main__':
