@@ -215,7 +215,7 @@ def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
     if len(platforms) > 1:
         select_command += "(Games."+platforms[0]+"=1"
         for platform in platforms[1:]:
-            select_command += " OR Games."+platforms[i]+"=1"
+            select_command += " OR Games."+platform+"=1"
         select_command += ")"
 
     cur.execute(select_command)
