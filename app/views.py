@@ -48,7 +48,9 @@ def games_output():
   game = request.args.get('ID')
 
   #Get whether or not the checkboxes are checked
-  
+  platforms = []
+  if 'platform[]' in request.values.keys():
+     platforms = request.values['platform[]']
 
   with db:
     cur = db.cursor()

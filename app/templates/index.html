@@ -20,6 +20,20 @@
           <input type="text" id="ID" name='ID' placeholder="e.g. BioShock">
         </div>
 
+        <br> If you like, specify a platform: <br>
+
+       	<div class="row">
+	  <div class="col-lg-6">
+	    <label for="platform_check" class="btn">
+              <input type="checkbox" name="platform[]" aria-label="Windows" value="Windows"> Windows
+              <input type="checkbox" name="platform[]" aria-label="Mac" value="Mac"> Mac
+              <input type="checkbox" name="platform[]" aria-label="Linux" value="Linux"> Linux
+	    </label>
+	  </div><!-- /.col-lg-6 -->
+	</div><!-- /.row -->
+
+	<br>
+
         <div>
           <button type="submit" class="btn btn-default btn-lg">Suggest games</button>
         </div>
@@ -30,19 +44,4 @@
 {% endblock %}
 
 {% block morecontent %}
-
-<div class = "container">
-
-<br> If you like, specify a platform: <br>
-
-<div class="row">
-  <div class="col-lg-6">
-        <input type="checkbox" name="windows" aria-label="Windows"> Windows
-        <input type="checkbox" name="mac" aria-label="Mac"> Mac
-        <input type="checkbox" name="linux" aria-label="Linux"> Linux
-  </div><!-- /.col-lg-6 -->
-</div><!-- /.row -->
-
-</div> <!-- /.container -->
-
 {% endblock %}
