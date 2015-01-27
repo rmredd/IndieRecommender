@@ -49,21 +49,28 @@ def games_output():
 
   #Get whether or not the checkboxes are checked
   platforms = []
-  if 'platform[]' in request.values.keys():
-     platforms = request.values['platform[]']
+  if 'platform_w' in request.values.keys():
+     platforms.append(request.values['platform_w'])
+  if 'platform_m' in request.values.keys():
+     platforms.append(request.values['platform_m'])
+  if 'platform_l' in request.values.keys():
+     platforms.append(request.values['platform_l'])
 
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
     
-    titles, game_types, themes, ratings, sim_ratings = recommend_games.run_everything_on_input_title(game,cur)
+    titles, game_types, themes, ratings, sim_ratings = recommend_games.run_everything_on_input_title(game,platforms,cur)
 
   games = []
   for i in range(len(titles)):
     games.append(dict(title=titles[i], game_type=game_types[1], theme=themes[i], rating=ratings[i],
                       sim_rating=sim_ratings[i]))
 
-  return render_template("output.html", big_game = game, games = games)
+  if len(platforms) == 0:
+     return render_template("output.html", big_game = game, games = games)
+  else:
+     return render_template("output.html", big_game = game, games = games, platforms = platforms)
 
 @app.route('/about')
 def games_about():
