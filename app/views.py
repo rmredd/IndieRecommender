@@ -47,6 +47,9 @@ def games_output():
   #pull 'ID' from input field and store it
   game = request.args.get('ID')
 
+  #Get whether or not the checkboxes are checked
+  
+
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
