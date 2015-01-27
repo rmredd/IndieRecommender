@@ -60,3 +60,6 @@ def games_output():
 
   return render_template("output.html", big_game = game, games = games)
 
+@app.route('/about')
+def games_about():
+   return render_template("about.html")
