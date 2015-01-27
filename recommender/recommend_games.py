@@ -160,7 +160,7 @@ def extract_game_type_info(my_game):
     return game_types, genres, players
 
 
-def get_matching_indie_games(genre, game_type, num_players, cur):
+def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
     #Get the list of words
     columns_command = "SHOW COLUMNS FROM Summary_words"
     cur.execute(columns_command)
@@ -205,6 +205,17 @@ def get_matching_indie_games(genre, game_type, num_players, cur):
         select_command += "(Games.theme = '"+genre[0]+"'"
         for some_genre in genre[1:]:
             select_command += " OR Games.theme = '"+some_genre+"'"
+        select_command += ")"
+
+    #Now, throw in platform selection
+    if len(platforms) > 0:
+        select_command += " AND "
+    if len(platforms) == 1:
+        select_command += "Games."+platforms[0]+"=1"
+    if len(platforms) > 1:
+        select_command += "(Games."+platforms[0]+"=1"
+        for platform in platforms[1:]:
+            select_command += " OR Games."+platforms[i]+"=1"
         select_command += ")"
 
     cur.execute(select_command)
@@ -255,7 +266,7 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5):
     game_types, genres, players = extract_game_type_info(my_game)
 
     #Includes matching on a list of options
-    game_data, words_list = get_matching_indie_games(genres, game_types, players,cur)
+    game_data, words_list = get_matching_indie_games(platforms, genres, game_types, players,cur)
     
     words_list = np.array(words_list)[:,0]
     #Make the dict we need to get the indices right
@@ -296,7 +307,7 @@ if __name__ == '__main__':
     with con:
         cur = con.cursor()
         
-        titles, game_types, themes, ratings, sim_ratings = run_everything_on_input_title('BioShock', cur)
+        titles, game_types, themes, ratings, sim_ratings = run_everything_on_input_title('BioShock', [], cur)
         for i in range(len(titles)):
 
             print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
