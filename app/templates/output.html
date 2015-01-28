@@ -39,11 +39,13 @@
     <div class = "container">
 
       <form  action="/output" method="GET">
-        <div class="form-group">
-          <label for="ID">Game Title:</label>
-          <input type="text" id="ID" name='ID' placeholder="e.g. BioShock">
-        </div>
-        <div>
+	<p> Game title: </p>
+        <select name="game_select" id="select2" class="js-example-basic-single">
+          {% for meta_title in meta_titles %}
+          <option name="{{ meta_title}}" value="{{ meta_title }}">{{ meta_title }}</option>
+          {% endfor %}
+        </select>
+    </div>
 	  <br> If you like, specify a platform: <br>
 
 	  <div class="row">
@@ -60,6 +62,10 @@
         </div>
       </form>
     </div>
+
+    <script type="text/javascript">
+      $('#select2').select2();
+    </script>
 
 {% endblock %}
 
