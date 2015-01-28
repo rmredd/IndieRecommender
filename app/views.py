@@ -47,6 +47,10 @@ def games_output():
   #pull 'ID' from input field and store it
   game = request.args.get('ID')
 
+  #If there was no input, pull the "no entry" output instead
+  if game == "":
+     return render_template("output_nogame.html")
+
   #Get whether or not the checkboxes are checked
   platforms = []
   if 'platform_w' in request.values.keys():

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block navlabel %}
+           <li class="active"><a href="#">Home</a></li>
+           <li><a href="/about">About</a></li>
+           <li><a href="#contact">Contact</a></li>
+{% endblock %}
+
+{% block body %}
+    <div class="starter-template">
+	<h2>Get A Recommendation</h2>
+	<h3> Oops! </h3>
+	<p>Sorry, I can't make a recommendation unless you enter a game. </p>
+        <p>Enter a game you already like.</p>
+    </div>
+
+    <div class = "container">
+
+      <form  action="/output" method="GET">
+        <div class="form-group">
+          <label for="ID">Search Game Title:</label>
+          <input type="text" id="ID" name='ID' placeholder="e.g. BioShock">
+        </div>
+
+        <br> If you like, specify a platform: <br>
+
+       	<div class="row">
+	  <div class="col-lg-6">
+	    <label for="platform_check" class="btn">
+              <input type="checkbox" name="platform_w" aria-label="Windows" value="Windows"> Windows
+              <input type="checkbox" name="platform_m" aria-label="Mac" value="Mac"> Mac
+              <input type="checkbox" name="platform_l" aria-label="Linux" value="Linux"> Linux
+	    </label>
+	  </div><!-- /.col-lg-6 -->
+	</div><!-- /.row -->
+
+	<br>
+
+        <div>
+          <button type="submit" class="btn btn-default btn-lg">Suggest games</button>
+        </div>
+
+      </form>
+    </div>
+
+{% endblock %}
+
+{% block morecontent %}
+{% endblock %}
