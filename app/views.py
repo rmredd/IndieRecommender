@@ -79,3 +79,7 @@ def games_output():
 @app.route('/about')
 def games_about():
    return render_template("about.html")
+
+@app.route('/contact')
+def games_contact():
+   return render_template("contact.html")
