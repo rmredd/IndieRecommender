@@ -80,6 +80,7 @@ def get_clean_indie_summary(text):
 
     summary = re.sub(r"\&quot;",r" ",summary)
     summary = re.sub(r"\&amp;",r" ",summary)
+    summary = re.sub(r"'",r"\\'",summary)
 
     return summary
 
@@ -112,10 +113,18 @@ def update_indie_summaries_in_database(cur):
 
         summary = read_indie_game_summary(my_url)
         if summary == "":
-            print "There was been an error in the read for ", id
+            print "There was been an error in the read for ", my_id
             continue
-
-        cur.execute('UPDATE Game_descr SET summary = "'+summary+'" WHERE Id = '+str(my_id))
+        try:
+            if len(summary) > 2000:
+                #Trim if necessary
+                summary = summary[:2000]
+            cur.execute("UPDATE Game_descr SET description = '"+summary+"' WHERE Id = "+str(my_id))
+        except mdb.Error, e:
+            print "Error in command for item ",my_id," with summary:"
+            print summary
+            print "Error was: ",e
+            break
 
     return
 
