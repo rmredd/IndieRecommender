@@ -10,7 +10,7 @@ from login_script import login_mysql
 def get_metacritic_game(title,cur):
     #Finds metacritic game in the database
 
-    command = "SELECT title, genre, summary, single_player, multiplayer, mmo, coop FROM Metacritic WHERE title = '"+title+"'"
+    command = 'SELECT title, genre, summary, single_player, multiplayer, mmo, coop FROM Metacritic WHERE title = "'+title+'"'
     cur.execute(command)
     mygame = cur.fetchall()
 
@@ -281,7 +281,10 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5):
 
     #Includes matching on a list of options
     game_data, words_list = get_matching_indie_games(platforms, genres, game_types, players,cur)
-    
+    #If we don't find any matches, select all games that match the platform(s)
+    if len(game_data[0]) == 0:
+        game_data, words_list = get_matching_indie_games(platforms, [], [], [], cur)
+
     words_list = np.array(words_list)[:,0]
     #Make the dict we need to get the indices right
     words_index = {}
@@ -307,6 +310,9 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5):
     rating = np.array(game_data)[:,1].astype(float)
     votes = np.array(game_data)[:,2].astype(int)
     rating_subset = np.where( (rating > 7) & (votes > 20))[0]
+    #If we need to be less restrictive, loosen the restrictions
+    if len(rating_subset) < nvalues:
+        rating_subset = np.array(range(len(rating)))
 
     sorted = rating_subset[np.argsort(similarity_rating[rating_subset])]
     sorted = sorted[::-1]
