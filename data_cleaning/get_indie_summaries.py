@@ -115,7 +115,7 @@ def update_indie_summaries_in_database(cur):
             print "There was been an error in the read for ", id
             continue
 
-        cur.execute()
+        cur.execute('UPDATE Game_descr SET summary = "'+summary+'" WHERE Id = '+str(my_id))
 
     return
 
@@ -123,8 +123,6 @@ if __name__ == "__main__":
     
     con = login_mysql("../login.txt")
     
-    print read_indie_game_summary("http://www.indiedb.com/games/splee-glob-monster-defense")
-
-    #with con:
-    #    cur = con.cursor()
-    #    update_indie_summaries_in_database(cur)
+    with con:
+        cur = con.cursor()
+        update_indie_summaries_in_database(cur)
