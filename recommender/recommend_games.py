@@ -20,6 +20,18 @@ def get_metacritic_game(title,cur):
 
     return mygame[0]
 
+def get_list_of_metacritic_titles(cur):
+    '''
+    Gets the full list of metacritic titles that are in the database, and sorts to make them alphabetical
+    '''
+
+    cur.execute("SELECT title FROM Metacritic")
+    title_list = cur.fetchall()
+    title_list = np.array(title_list)
+    title_list = title_list[:,0]
+    title_list.sort()
+
+    return title_list
 
 def extract_game_type_info(my_game):
     '''
