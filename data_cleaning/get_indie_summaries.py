@@ -7,6 +7,7 @@ import numpy as np
 import MySQLdb as mdb
 import re
 import urllib
+import title_cleanup
 
 from login_script import login_mysql
 
@@ -80,7 +81,10 @@ def get_clean_indie_summary(text):
 
     summary = re.sub(r"\&quot;",r" ",summary)
     summary = re.sub(r"\&amp;",r" ",summary)
-    summary = re.sub(r"'",r"\\'",summary)
+    if not re.match(r"\\",summary):
+        summary = re.sub(r"'",r"\\'",summary)
+    #Fixing stupid unicode issues
+    summary = title_cleanup.replace_right_quote(unicode(summary,errors='ignore'))
 
     return summary
 
@@ -98,7 +102,7 @@ def read_indie_game_summary(url):
 
     return get_clean_indie_summary(text)
 
-def update_indie_summaries_in_database(cur):
+def update_indie_summaries_in_database(cur,index_min = 0):
     '''
     If there's an error, and the summary is blank, don't touch the database
     '''
@@ -111,16 +115,21 @@ def update_indie_summaries_in_database(cur):
         my_id = row[0]
         my_url = row[1]
 
+        #Function for skipping things that have been updated already
+        if my_id < index_min:
+            continue
+
         if my_id % 100 == 0:
             print "Complete through ", my_id
 
         if my_url == "" or my_url == None:
-            print "Unable to read url for ", my_id
+            print "No url for ", my_id
             continue
         summary = read_indie_game_summary(my_url)
         if summary == "":
             print "There was been an error in the read for ", my_id
             continue
+
         try:
             if len(summary) > 2000:
                 #Trim if necessary
@@ -140,4 +149,4 @@ if __name__ == "__main__":
     
     with con:
         cur = con.cursor()
-        update_indie_summaries_in_database(cur)
+        update_indie_summaries_in_database(cur,index_min=8215)
