@@ -111,6 +111,12 @@ def update_indie_summaries_in_database(cur):
         my_id = row[0]
         my_url = row[1]
 
+        if my_id % 100 == 0:
+            print "Complete through ", my_id
+
+        if my_url == "" or my_url == None:
+            print "Unable to read url for ", my_id
+            continue
         summary = read_indie_game_summary(my_url)
         if summary == "":
             print "There was been an error in the read for ", my_id
