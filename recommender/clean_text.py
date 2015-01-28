@@ -11,30 +11,36 @@ def clean_summary_text(text):
     Note that this also removes HTML code
     '''
 
-    #Make everything lowercase                                                                                                                                                                    
+    #Make everything lowercase
     clean_text = text.lower()
 
-    #Strip HTML tags, repleace with a space                                                                                                                                                       
+    #Strip HTML tags, repleace with a space
     clean_text = re.sub(r'<[^<>]+>',' ',clean_text)
 
-    #Replace numbers with 'number'                                                                                                                                                                
+    #Replace numbers with 'number'
     clean_text = re.sub(r'[0-9]+', r'number',clean_text)
 
-    #Handle URLs                                                                                                                                                                                  
+    #Handle URLs
     clean_text = re.sub(r'(http|https)://[^\s]*', r'httpaddr',clean_text)
 
-    #Handle email addresses -- strings containing '@'                                                                                                                                             
+    #Handle email addresses -- strings containing '@'
     clean_text = re.sub(r'[^\s]+@[^\s]+', r'emailaddr',clean_text)
 
-    #Replace dollar sign                                                                                                                                                                          
+    #Replace dollar sign
     clean_text = re.sub(r'[$]+', r'dollar',clean_text)
 
-    #Remove any remaining alphanumeric characters                                                                                                                                                 
+    #Remove any remaining alphanumeric characters
     clean_text = re.sub('[\\@$\/\#\.\-:&\*\+\=\[\]?!\(\)\{\},\'\">\_<;%]',r'',clean_text)
 
-    #Remove excess white spaces, and replace with a single space                                                                                                                                  
+    #Remove excess white spaces, and replace with a single space
     clean_text = re.sub(r'\s+',r' ',clean_text)
-    #Strip beginning/ending white space                                                                                                                                                           
+
+    #Remove stupid characters
+    clean_text = re.sub(r'~',r' ',clean_text)
+    clean_text = re.sub(r'\|',r' ', clean_text)
+    clean_text = re.sub(r'\^',r' ', clean_text)
+    
+    #Strip beginning/ending white space
     clean_text = clean_text.strip()
 
     return clean_text
