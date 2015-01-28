@@ -6,6 +6,7 @@ import nltk
 import MySQLdb as mdb
 import pandas as pd
 
+import title_cleanup
 from login_script import login_mysql
 
 #Scripts for cleaning up the summary data and creating a useful array for the text
@@ -34,22 +35,28 @@ def clean_summary_text(text):
     #Replace dollar sign                                                                                                                                                                          
     clean_text = re.sub(r'[$]+', r'dollar',clean_text)
 
-    #Remove any remaining alphanumeric characters                                                                                                                                                 
+    #Remove any remaining alphanumeric characters
     clean_text = re.sub('[\\@$\/\#\.\-:&\*\+\=\[\]?!\(\)\{\},\'\">\_<;%]',r'',clean_text)
 
-    #Remove excess white spaces, and replace with a single space                                                                                                                                  
+    #Remove excess white spaces, and replace with a single space
     clean_text = re.sub(r'\s+',r' ',clean_text)
-    #Strip beginning/ending white space                                                                                                                                                           
+
+    #Remove stupid characters
+    clean_text = re.sub(r'~',r' ',clean_text)
+    clean_text = re.sub(r'\|',r' ', clean_text)
+    clean_text = re.sub(r'\^',r' ', clean_text)
+    
+    #Strip beginning/ending white space
     clean_text = clean_text.strip()
 
     return clean_text
     
 def get_word_stems(text):
-    '''                                                                                                                                                                                           
-    Gets all word stems from a block of cleaned text                                                                                                                                              
+    '''
+    Gets all word stems from a block of cleaned text
     '''
 
-    #Split text into words                                                                                                                                                                        
+    #Split text into words
     words = text.split()
 
     stem_text = []
@@ -248,6 +255,6 @@ if __name__ == "__main__":
         words_list, game_ids = get_words_from_database(cur)
         print "Data acquired."
 
-        produce_database_of_common_words(words_list, game_ids, cur)
+        produce_database_of_common_words(words_list, game_ids, cur, nwords=1000)
 
     print "All done!"
