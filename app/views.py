@@ -9,13 +9,21 @@ from login_script import login_mysql
 db = login_mysql('login.txt')
 charset = 'utf8'
 
+#Get the full list of Metacritic game titles
+with db:
+   cur = db.cursor()
+   meta_titles = recommend_games.get_list_of_metacritic_titles(cur)
+db.close()
+db = login_mysql('login.txt')
+
 @app.route('/')
 @app.route('/index')
 def index():
    user = { 'nickname': 'Miguel' } # fake user
    return render_template("index.html",
-       title = 'Home',
-       user = user)
+                          title = 'Home',
+                          user = user,
+                          meta_titles = meta_titles)
 
 @app.route('/db')
 def games_page():
@@ -42,15 +50,16 @@ def games_page_fancy():
         games.append(dict(title=result[0], creator=result[1], game_type=result[2], rating=result[3]))
     return render_template('games.html', games=games)
 
-@app.route('/output')
+@app.route('/output', methods=['GET'])
 def games_output():
   #pull 'ID' from input field and store it
-  game = request.args.get('ID')
-
+  game = request.args.get('game_select')
+  
   #If there was no input, pull the "no entry" output instead
-  if game == "":
+  if game == "" or game == None:
      return render_template("output_nogame.html")
-
+  
+  print "Keys: ", request.values.keys()
   #Get whether or not the checkboxes are checked
   platforms = []
   if 'platform_w' in request.values.keys():
@@ -72,9 +81,9 @@ def games_output():
                       sim_rating=sim_ratings[i]))
 
   if len(platforms) == 0:
-     return render_template("output.html", big_game = game, games = games)
+     return render_template("output.html", big_game = game, games = games, meta_titles = meta_titles)
   else:
-     return render_template("output.html", big_game = game, games = games, platforms = platforms)
+     return render_template("output.html", big_game = game, games = games, platforms = platforms, meta_titles = meta_titles)
 
 @app.route('/about')
 def games_about():
