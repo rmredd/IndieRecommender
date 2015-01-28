@@ -78,6 +78,9 @@ def get_clean_indie_summary(text):
     #Strip HTML tags and replace with a space
     summary = re.sub(r'<[^<>]+>',' ',sub_text)
 
+    summary = re.sub(r"\&quot;",r" ",summary)
+    summary = re.sub(r"\&amp;",r" ",summary)
+
     return summary
 
 def read_indie_game_summary(url):
@@ -100,7 +103,19 @@ def update_indie_summaries_in_database(cur):
     '''
     
     #First, read in the list of Ids and urls
-    cur.execute("")
+    cur.execute("SELECT Id, url FROM Games")
+    rows = cur.fetchall()
+
+    for row in rows:
+        my_id = row[0]
+        my_url = row[1]
+
+        summary = read_indie_game_summary(my_url)
+        if summary == "":
+            print "There was been an error in the read for ", id
+            continue
+
+        cur.execute()
 
     return
 
@@ -108,11 +123,8 @@ if __name__ == "__main__":
     
     con = login_mysql("../login.txt")
     
-    url_amnesia = "http://www.indiedb.com/games/amnesia-the-dark-descent"
-    print read_indie_game_summary(url_amnesia)
-    #url_df = "http://www.indiedb.com/games/dwarf-fortress"
-    #print read_indie_game_summary(url_df)
+    print read_indie_game_summary("http://www.indiedb.com/games/splee-glob-monster-defense")
 
-    with con:
-        cur = con.cursor()
-        update_indie_summaries_in_database(cur)
+    #with con:
+    #    cur = con.cursor()
+    #    update_indie_summaries_in_database(cur)
