@@ -59,7 +59,6 @@ def games_output():
   if game == "" or game == None:
      return render_template("output_nogame.html")
   
-  print "Keys: ", request.values.keys()
   #Get whether or not the checkboxes are checked
   platforms = []
   if 'platform_w' in request.values.keys():
