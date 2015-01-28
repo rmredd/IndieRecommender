@@ -243,6 +243,8 @@ def make_metacritic_game_words_vector(summary, words_index, idf):
     '''
 
     clean_summary = clean_text.clean_summary_text(summary)
+    #Make sure the encoding is fixed
+    clean_summary = clean_text.replace_right_quote(unicode(clean_summary,errors='ignore'))
     my_words = clean_text.get_word_stems(clean_summary)
 
     return clean_text.get_tf_idf(words_index, my_words, idf)

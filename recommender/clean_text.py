@@ -3,10 +3,20 @@
 import numpy as np
 import re
 import nltk
+import unicodedata
 import pandas as pd
 
+
+def replace_right_quote(text):
+    temptext = unicodedata.normalize('NFKD',text)
+    temptext = temptext.encode('ascii','backslashreplace')
+    temptext = re.sub(r'\\u2019',"'",temptext)
+    #Remove remaining odd characters                                                                                                                                                           
+    temptext = re.sub(r'\\u\d\d\d\d','',temptext)
+    return temptext
+
 def clean_summary_text(text):
-    '''                                                                                                                                                                                           
+    '''
     Main set of routines that cleans up the text, ready for stemming
     Note that this also removes HTML code
     '''
@@ -46,11 +56,11 @@ def clean_summary_text(text):
     return clean_text
 
 def get_word_stems(text):
-    '''                                                                                                                                                                                           
-    Gets all word stems from a block of cleaned text                                                                                                                                              
+    '''
+    Gets all word stems from a block of cleaned text
     '''
 
-    #Split text into words                                                                                                                                                                        
+    #Split text into words
     words = text.split()
 
     stem_text = []
