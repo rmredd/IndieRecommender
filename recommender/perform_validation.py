@@ -35,12 +35,14 @@ def get_meta_indie_games(cur):
 
     return titles, indie_ids, meta_ids, game_types, themes, players, meta_genres
 
-def run_validation_test_single_game(title, game_type, theme, players, meta_genre, cur):
+def run_validation_test_single_game(title, game_type, theme, players, meta_genre, cur, min_rating = 7., min_votes=20):
     '''
     Runs a validation test on a single game.
     '''
 
-    title_match, gt_match, theme_match, rate_match, sim_match = recommend_games.run_everything_on_input_title(title, [], cur, nvalues=10)
+    title_match, gt_match, theme_match, rate_match, sim_match = recommend_games.run_everything_on_input_title(title, [], cur, nvalues=10,
+                                                                                                              min_rating=min_rating,
+                                                                                                              min_votes = min_votes)
     
     if title in title_match:
         print "Gotcha! "
@@ -48,7 +50,7 @@ def run_validation_test_single_game(title, game_type, theme, players, meta_genre
         print "Oops, missed it."
     print title, game_type, theme, players, meta_genre
     for i in range(len(title_match)):
-        print title_match[i], gt_match[i], theme_match[i], rate_match[i], sim_match[i]
+        print "    ",title_match[i], gt_match[i], theme_match[i], rate_match[i], sim_match[i]
 
     return
 
@@ -61,5 +63,5 @@ if __name__ == "__main__":
         titles, indie_ids, meta_ids, game_types, themes, players, meta_genres = get_meta_indie_games(cur)
         print "Found ", len(titles), " games that are in both databases"
         print "Starting validation..."
-        run_validation_test_single_game(titles[0], game_types[0], themes[0], players[0], meta_genres[0], cur)
-        
+        for i in range(10):
+            run_validation_test_single_game(titles[i], game_types[i], themes[i], players[i], meta_genres[i], cur, min_votes=-1, min_rating=-2)
