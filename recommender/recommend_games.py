@@ -7,6 +7,22 @@ import re
 import clean_text
 from login_script import login_mysql
 
+def get_list_of_words(cur):
+    '''
+    Get the list (and ordering) of words currently being used in the database
+    Returns the list of words (with stem initial portion label) and a dict of words and indices
+    '''
+    cur.execute("SHOW COLUMNS FROM Summary_words")
+    words_list = cur.fetchall()
+    words_list = words_list[2:]
+    words_list = np.array(words_list)[:,0]
+    #Make the dict we need to get the indices right
+    words_index = {}
+    for i in range(len(words_list)):
+        words_index[words_list[i][5:]] = i
+
+    return words_list, words_index
+
 def get_metacritic_game(title,cur):
     #Finds metacritic game in the database
 
@@ -254,6 +270,9 @@ def get_words_distance(words_indie_single, words_vector):
     Gets the angle between the word vectors
     '''
     dist = np.sum( words_indie_single*words_vector) / np.sqrt(np.sum(words_indie_single**2)) / np.sqrt(np.sum(words_vector**2))
+
+    if np.isnan(dist) or np.isinf(dist):
+        dist = 0.
     return dist
 
 def get_all_words_distance(words_indie_matrix, words_vector):
