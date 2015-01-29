@@ -18,7 +18,7 @@ def get_meta_indie_games(cur):
     Restricts to PC games only
     '''
 
-    select_command = "SELECT title, Games.Id, Metacritic.Id, Games.game_type, Games.theme, Games.single_player, Games.multiplayer, "
+    select_command = "SELECT Games.title, Games.Id, Metacritic.Id, Games.game_type, Games.theme, Games.single_player, Games.multiplayer, "
     select_command += "Games.mmo, Games.coop, Metacritic.genre FROM Games JOIN Metacritic ON Games.title = Metacritic.title "
     select_command += "WHERE ( Games.Windows = 1 OR Games.Mac = 1 OR Games.Linux = 1 )"
     cur.execute(select_command)
@@ -57,7 +57,9 @@ if __name__ == "__main__":
 
     with con:
         cur = con.cursor()
-        titles, indie_ids, game_types, theme, players, meta_genres = get_meta_indie_games(cur)
-
-        run_validation_test_single_game(titles[0], game_types[0], themes[0], players[0], meta_genre[0])
+        print "Getting list of overlap games..."
+        titles, indie_ids, meta_ids, game_types, themes, players, meta_genres = get_meta_indie_games(cur)
+        print "Found ", len(titles), " games that are in both databases"
+        print "Starting validation..."
+        run_validation_test_single_game(titles[0], game_types[0], themes[0], players[0], meta_genres[0], cur)
         
