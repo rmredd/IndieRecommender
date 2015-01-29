@@ -269,7 +269,7 @@ def get_all_words_distance(words_indie_matrix, words_vector):
 
     return dist
 
-def run_everything_on_input_title(title, platforms, cur, nvalues=5):
+def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7., min_votes=20):
     '''
     Returns title, game_type, theme, indiedb rating, and similarity rating
     Returns nvalues total matches, default 5
@@ -309,7 +309,7 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5):
     similarity_rating = get_all_words_distance(words_indie_matrix, words_vector)
     rating = np.array(game_data)[:,1].astype(float)
     votes = np.array(game_data)[:,2].astype(int)
-    rating_subset = np.where( (rating > 7) & (votes > 20))[0]
+    rating_subset = np.where( (rating > min_rating) & (votes > min_votes))[0]
     #If we need to be less restrictive, loosen the restrictions
     if len(rating_subset) < nvalues:
         rating_subset = np.array(range(len(rating)))
