@@ -302,7 +302,7 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
     leftovers = cur.fetchall() #In case something weird happens and there's more than one row
 
     words_vector = make_metacritic_game_words_vector(my_summary, words_index, idf)
-        
+
     #Find the "distance" to each of the other games
     words_indie_matrix = np.array(game_data)[:,-len(words_vector):].astype(float)
 
