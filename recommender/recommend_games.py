@@ -319,6 +319,7 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5):
 
     game_data_arr = np.array(game_data)
 
+    #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating
     return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]]
 
 if __name__ == '__main__':
