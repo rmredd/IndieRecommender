@@ -237,28 +237,20 @@ def recollect_metacritic_summaries(cur):
             break
             
         #Find the expanded text blurb
-        sum_match = re.search(r'class="blurb blurb_expanded".*?>([\w\W]*?)</span>',text)
+        sum_match = re.search(r'<meta property="og:description" content="([\w\W]*?)">',text)
         if sum_match:
             summary = sum_match.group(1)
         else:
-            sum_match = re.search(r'class="blurb.*?>([\w\W]*?)</span>',text)
-            if sum_match:
-                summary = sum_match.group(1)
-            else:
-                sum_match = re.search(r'meta property="og:description" content="([\w\W]*?)>',text)
-                if sum_match:
-                    summary = sum_match.group(1)
-                else:
-                    summary = ""
-                    print "Something failed: ", Id, url
-                    continue
+            summary = ""
+            print "Something failed: ", Id, url
+            continue
 
         #Update the database
         if summary != '':
             #deal with annoying apostrophes
             if len(summary) > 2000:
                 summary = summary[:2000]
-            update_command = "UPDATE Metacritic SET summary = '"+re.sub(r"'",r"\\'",summary)+"' WHERE Id = "+str(Id)
+            update_command = 'UPDATE Metacritic SET summary = "'+re.sub(r"'",r"\\'",summary)+'" WHERE Id = '+str(Id)
             try:
                 cur.execute(update_command)
             except mdb.Error, e:
@@ -283,15 +275,15 @@ if __name__ == '__main__':
 
     #Read the data in
     print "Getting the first set of data"
-    title, genre_list, game_url = collect_basic_metacritic_data()
+    #title, genre_list, game_url = collect_basic_metacritic_data()
 
     print "Creating the initial database..."
     with con:
         cur = con.cursor()
-        make_main_metacritic_database(cur,title, genre_list, game_url)
+        #make_main_metacritic_database(cur,title, genre_list, game_url)
     
-        print "Adding to the database..."
-        collect_more_metacritic_data_to_database(cur)
+        #print "Adding to the database..."
+        #collect_more_metacritic_data_to_database(cur)
 
         print "Updating the summary text to full..."
         recollect_metacritic_summaries(cur)
