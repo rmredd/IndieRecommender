@@ -71,7 +71,7 @@ def games_output():
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
-    titles, game_types, themes, ratings, sim_ratings, game_urls = recommend_games.run_everything_on_input_title(game,platforms,cur)
+    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,cur)
 
   games = []
   for i in range(len(titles)):
@@ -79,9 +79,10 @@ def games_output():
                       sim_rating=int(sim_ratings[i]*100+0.5), url=game_urls[i]))
 
   if len(platforms) == 0:
-     return render_template("output.html", big_game = game, games = games, meta_titles = meta_titles)
+     return render_template("output.html", big_game = game, games = games, meta_titles = meta_titles, rel_words=rel_words)
   else:
-     return render_template("output.html", big_game = game, games = games, platforms = platforms, meta_titles = meta_titles)
+     return render_template("output.html", big_game = game, games = games, platforms = platforms, 
+                            meta_titles = meta_titles, rel_words = rel_words)
 
 @app.route('/about')
 def games_about():

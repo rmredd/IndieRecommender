@@ -16,6 +16,7 @@
 	{% else %}
 	<p> You did not specify a platform.  Games on any platform may be shown.</p>
 	{% endif %}
+	<p> Some of the descriptive terms used to find games were: {% for word in rel_words %} {{ word }} {% endfor %}</p>
       </div>
 
       <table class="table table-hover">

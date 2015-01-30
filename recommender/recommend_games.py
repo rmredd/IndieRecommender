@@ -288,6 +288,26 @@ def get_all_words_distance(words_indie_matrix, words_vector):
 
     return dist
 
+def get_relevant_words(indie_words_matrix, words_vector, words_list):
+    '''
+    Find the words that are most relevant to a given selection of similar games
+    Takes in the matrix of selected games, the metacritic word vector, and the words_list
+    Currently just returns the top five words
+    '''
+
+    temp_vector = np.zeros_like(words_vector)
+    for indie_vector in indie_words_matrix:
+        denominator = np.sqrt(np.sum(indie_vector**2)) * np.sqrt(np.sum(words_vector**2))
+        if denominator == 0:
+            continue
+        temp_vector += indie_vector * words_vector / denominator
+        
+    relevant_words = words_list[ np.argsort(temp_vector)[::-1] ]
+    for i in range(len(relevant_words)):
+        relevant_words[i] = relevant_words[i][5:]
+
+    return relevant_words[:5]
+
 def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7., min_votes=20):
     '''
     Returns title, game_type, theme, indiedb rating, and similarity rating
@@ -301,7 +321,9 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
     #Includes matching on a list of options
     game_data, words_list = get_matching_indie_games(platforms, genres, game_types, players,cur)
     #If we don't find any matches, select all games that match the platform(s)
-    if len(game_data[0]) == 0:
+    if len(game_data) == 0:
+        game_data, words_list = get_matching_indie_games(platforms, [], [], [], cur)
+    elif len(game_data[0]) == 0:
         game_data, words_list = get_matching_indie_games(platforms, [], [], [], cur)
 
     words_list = np.array(words_list)[:,0]
@@ -338,8 +360,10 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
 
     game_data_arr = np.array(game_data)
 
-    #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating, and url
-    return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]], game_data_arr[sorted[:nvalues], 5]
+    relevant_words = get_relevant_words(words_indie_matrix[sorted[:nvalues]], words_vector, words_list)
+
+    #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating, url, and list of relevant words
+    return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]], game_data_arr[sorted[:nvalues], 5], relevant_words
 
 if __name__ == '__main__':
     con = login_mysql("../login.txt")
