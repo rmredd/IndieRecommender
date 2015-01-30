@@ -35,24 +35,52 @@ def get_meta_indie_games(cur):
 
     return titles, indie_ids, meta_ids, game_types, themes, players, meta_genres
 
-def run_validation_test_single_game(title, game_type, theme, players, meta_genre, cur, min_rating = 7., min_votes=20):
+def run_validation_test_single_game(indie_id, title, game_type, theme, players, meta_genre, words_list, 
+                                    words_index, cur, min_rating = 7., min_votes=20):
     '''
     Runs a validation test on a single game.
+
+    Returns title of best-match game, its similarity rating, and the rating of the input game
     '''
 
-    title_match, gt_match, theme_match, rate_match, sim_match = recommend_games.run_everything_on_input_title(title, [], cur, nvalues=10,
+    title_match, gt_match, theme_match, rate_match, sim_match = recommend_games.run_everything_on_input_title(title, [], cur, nvalues=2,
                                                                                                               min_rating=min_rating,
                                                                                                               min_votes = min_votes)
-    
-    if title in title_match:
-        print "Gotcha! "
+    if title == title_match[0]:
+        best_place = 1
     else:
-        print "Oops, missed it."
-    print title, game_type, theme, players, meta_genre
-    for i in range(len(title_match)):
-        print "    ",title_match[i], gt_match[i], theme_match[i], rate_match[i], sim_match[i]
+        best_place = 0
+    
+    #Get the self-similarity of the input game.  If this is in the output already, get it; otherwise, calculate it from scratch
+    if title == title_match[0]:
+        sim_self = sim_match[0]
+    elif title == title_match[1]:
+        sim_self = sim_match[1]
+    else:
+        cur.execute('SELECT summary FROM Metacritic WHERE title = "'+title+'"')
+        meta_summary = cur.fetchall()[0][0]
 
-    return
+        #Get the idf normalizations
+        cur.execute("SELECT * FROM idf_vals WHERE Id = 1")
+        idf = cur.fetchone()
+        idf = idf[1:]
+        idf = np.array(idf).astype(float)
+        leftovers = cur.fetchall() #In case something weird happens and there's more than one row   
+        
+        #Get the vector on the metacritic side
+        words_vector = recommend_games.make_metacritic_game_words_vector(meta_summary, words_index, idf)
+        words_vector = np.array(words_vector).astype(float)
+        #Get the vector on the indie side
+        select_command = "SELECT Games.rating "
+        for word in words_list:
+            select_command += ", Summary_words."+word
+        select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id WHERE Games.id="+str(indie_id)
+        cur.execute(select_command)
+        words_vector_indie = cur.fetchall()[0]
+        words_vector_indie = np.array(words_vector_indie[1:]).astype(float)
+        sim_self = recommend_games.get_words_distance(words_vector_indie, words_vector)
+
+    return title_match[best_place], sim_match[best_place], sim_self
 
 if __name__ == "__main__":
     con = login_mysql("../login.txt")
@@ -61,7 +89,20 @@ if __name__ == "__main__":
         cur = con.cursor()
         print "Getting list of overlap games..."
         titles, indie_ids, meta_ids, game_types, themes, players, meta_genres = get_meta_indie_games(cur)
+        print "Getting word list..."
+        words_list, words_index = recommend_games.get_list_of_words(cur)
         print "Found ", len(titles), " games that are in both databases"
+        sim_self_all = np.zeros(len(titles))
+        sim_other_all = np.zeros(len(titles))
         print "Starting validation..."
-        for i in range(10):
-            run_validation_test_single_game(titles[i], game_types[i], themes[i], players[i], meta_genres[i], cur, min_votes=-1, min_rating=-2)
+        for i in range(len(titles)):
+            sim_title, sim_other, sim_self = run_validation_test_single_game(indie_ids[i], titles[i], game_types[i], 
+                                                                                           themes[i], players[i], meta_genres[i], 
+                                                                                           words_list, words_index, cur, min_votes=-1, min_rating=-2)
+            print i, "True: ", titles[i], sim_self
+            print "    Match: ", sim_title, sim_other
+            sim_self_all[i] = sim_self
+            sim_other_all[i] = sim_other
+
+        print len(np.where(sim_self_all > sim_other_all)[0]), " games of ", len(titles), " are their own best match."
+        print np.mean(sim_self_all), np.mean(sim_other_all), np.mean(sim_self_all-sim_other_all), np.std(sim_self_all-sim_other_all)
