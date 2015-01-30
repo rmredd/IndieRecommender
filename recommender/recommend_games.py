@@ -194,7 +194,7 @@ def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
     cur.execute(columns_command)
     words_list = cur.fetchall()
 
-    select_command = "SELECT Games.title, Games.rating, Games.votes, Games.theme, Games.game_type "
+    select_command = "SELECT Games.title, Games.rating, Games.votes, Games.theme, Games.game_type, Games.url "
     for word in words_list[2:]:
         select_command += ", Summary_words."+word[0]
     select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id"
@@ -338,8 +338,8 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
 
     game_data_arr = np.array(game_data)
 
-    #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating
-    return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]]
+    #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating, and url
+    return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]], game_data_arr[sorted[:nvalues], 5]
 
 if __name__ == '__main__':
     con = login_mysql("../login.txt")
