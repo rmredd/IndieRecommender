@@ -76,7 +76,7 @@ def games_output():
   games = []
   for i in range(len(titles)):
     games.append(dict(title=titles[i], game_type=game_types[i], theme=themes[i], rating=ratings[i],
-                      sim_rating=sim_ratings[i], url=game_urls[i]))
+                      sim_rating=int(sim_ratings[i]*100+0.5), url=game_urls[i]))
 
   if len(platforms) == 0:
      return render_template("output.html", big_game = game, games = games, meta_titles = meta_titles)
