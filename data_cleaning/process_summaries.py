@@ -294,7 +294,7 @@ def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords
     create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT, word VARCHAR(50), idf FLOAT)"
     cur.execute(create_command)
     for i in range(nwords):
-        insert_command = "INSERT INTO idf_vals(word) VALUES ('"+words_common_text[i]+"', "+str(idf[i])+")"
+        insert_command = "INSERT INTO idf_vals(word, idf) VALUES ('"+words_common_text[i]+"', "+str(idf[i])+")"
         cur.execute(insert_command)
 
     return
