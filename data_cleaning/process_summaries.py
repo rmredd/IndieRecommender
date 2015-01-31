@@ -326,6 +326,6 @@ if __name__ == "__main__":
         print "Data acquired."
 
         #produce_database_of_common_words(words_list, game_ids, cur, nwords=1000)
-        produce_database_of_common_words(words_list, game_ids, cur, "../", nwords=1000)
+        produce_pickle_of_common_words(words_list, game_ids, cur, "../", nwords=1000)
 
     print "All done!"
