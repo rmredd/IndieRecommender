@@ -291,26 +291,11 @@ def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords
 
     #Create a shorter table for saving the baseline idf values
     cur.execute("DROP TABLE IF EXISTS idf_vals")
-    create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT"
-    for i in range(nwords):
-        create_command += ", stem_" + words_common_text[i] + " FLOAT"
-    create_command += ")"
-    print create_command
+    create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT, word VARCHAR(50))"
     cur.execute(create_command)
-    insert_command = "INSERT INTO idf_vals("
     for i in range(nwords):
-        if i == 0:
-            insert_command += "stem_" + words_common_text[0]
-        else:
-            insert_command += ", stem_" + words_common_text[i]
-    insert_command += ") VALUES ("
-    for i in range(nwords):
-        if i == 0:
-            insert_command += str(idf[i])
-        else:
-            insert_command += ", "+str(idf[i])
-    insert_command += ")"
-    cur.execute(insert_command)
+        insert_command = "INSERT INTO idf_vals(word) VALUES ("+word_common_text[i]+")"
+        cur.execute(insert_command)
 
     return
 
