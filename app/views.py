@@ -75,7 +75,7 @@ def games_output():
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
-    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,words_indie_matrx,cur)
+    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,words_indie_matrix,cur)
 
   games = []
   for i in range(len(titles)):
