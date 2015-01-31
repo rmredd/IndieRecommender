@@ -12,14 +12,12 @@ def get_list_of_words(cur):
     Get the list (and ordering) of words currently being used in the database
     Returns the list of words (with stem initial portion label) and a dict of words and indices
     '''
-    cur.execute("SHOW COLUMNS FROM Summary_words")
+    cur.execute("SELECT word FROM idf_vals")
     words_list = cur.fetchall()
-    words_list = words_list[2:]
     words_list = np.array(words_list)[:,0]
-    #Make the dict we need to get the indices right
     words_index = {}
     for i in range(len(words_list)):
-        words_index[words_list[i][5:]] = i
+        words_index[words_list[i]] = i
 
     return words_list, words_index
 
