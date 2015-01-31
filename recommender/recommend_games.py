@@ -364,6 +364,6 @@ if __name__ == '__main__':
     with con:
         cur = con.cursor()
         
-        titles, game_types, themes, ratings, sim_ratings, rel_words = run_everything_on_input_title('BioShock', [], words_indie_matrix, cur)
+        titles, game_types, themes, ratings, sim_ratings, urls, rel_words = run_everything_on_input_title('BioShock', [], words_indie_matrix, cur)
         for i in range(len(titles)):
             print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
