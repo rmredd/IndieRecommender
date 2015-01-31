@@ -187,15 +187,9 @@ def extract_game_type_info(my_game):
 
 
 def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
-    #Get the list of words
-    columns_command = "SHOW COLUMNS FROM Summary_words"
-    cur.execute(columns_command)
-    words_list = cur.fetchall()
-
-    select_command = "SELECT Games.title, Games.rating, Games.votes, Games.theme, Games.game_type, Games.url "
-    for word in words_list[2:]:
-        select_command += ", Summary_words."+word[0]
-    select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id"
+    #Start the basics of the select command
+    select_command = "SELECT Games.title, Games.rating, Games.votes, Games.theme, Games.game_type, Games.url, Games.Id "
+    select_command += " FROM Games"
 
     #If we're doing any additional selections, add a where statement
     if len(genre) > 0 or len(game_type) > 0 or len(num_players) > 0:
@@ -247,7 +241,7 @@ def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
     cur.execute(select_command)
     game_data = cur.fetchall()
 
-    return game_data, words_list[2:]
+    return game_data
 
 def make_metacritic_game_words_vector(summary, words_index, idf):
     '''
@@ -306,7 +300,7 @@ def get_relevant_words(indie_words_matrix, words_vector, words_list):
 
     return relevant_words[:5]
 
-def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7., min_votes=20):
+def run_everything_on_input_title(title, platforms, words_indie_matrix, cur, nvalues=5, min_rating=7., min_votes=20):
     '''
     Returns title, game_type, theme, indiedb rating, and similarity rating
     Returns nvalues total matches, default 5
@@ -317,35 +311,32 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
     game_types, genres, players = extract_game_type_info(my_game)
 
     #Includes matching on a list of options
-    game_data, words_list = get_matching_indie_games(platforms, genres, game_types, players,cur)
+    game_data = get_matching_indie_games(platforms, genres, game_types, players,cur)
     #If we don't find any matches, select all games that match the platform(s)
     if len(game_data) == 0:
-        game_data, words_list = get_matching_indie_games(platforms, [], [], [], cur)
+        game_data = get_matching_indie_games(platforms, [], [], [], cur)
     elif len(game_data[0]) == 0:
-        game_data, words_list = get_matching_indie_games(platforms, [], [], [], cur)
+        game_data = get_matching_indie_games(platforms, [], [], [], cur)
 
-    words_list = np.array(words_list)[:,0]
-    #Make the dict we need to get the indices right
-    words_index = {}
-    for i in range(len(words_list)):
-        words_index[words_list[i][5:]] = i
+    #Using the list of IDs from the game data, select out the words vector info we need
+    #Note that the IDs start at 1, so we need to subtract one
+    words_indie_matrix_trim = words_indie_matrix[np.array(game_data)[:,-1].astype(int)-1]
+
+    #List of words and indices dict
+    words_list, words_index = get_list_of_words(cur)
     
     #Separating out the summary for this game
     my_summary = my_game[2]
     
     #Read in the idf normalizations
-    cur.execute("SELECT * FROM idf_vals WHERE Id = 1")
-    idf = cur.fetchone()
-    idf = idf[1:]
-    idf = np.array(idf).astype(float)
-    leftovers = cur.fetchall() #In case something weird happens and there's more than one row
+    cur.execute("SELECT idf FROM idf_vals")
+    idf = cur.fetchall()
+    idf = np.array(idf).astype(float)[:,0]
 
     words_vector = make_metacritic_game_words_vector(my_summary, words_index, idf)
 
     #Find the "distance" to each of the other games
-    words_indie_matrix = np.array(game_data)[:,-len(words_vector):].astype(float)
-
-    similarity_rating = get_all_words_distance(words_indie_matrix, words_vector)
+    similarity_rating = get_all_words_distance(words_indie_matrix_temp, words_vector)
     rating = np.array(game_data)[:,1].astype(float)
     votes = np.array(game_data)[:,2].astype(int)
     rating_subset = np.where( (rating > min_rating) & (votes > min_votes))[0]
@@ -358,18 +349,20 @@ def run_everything_on_input_title(title, platforms, cur, nvalues=5, min_rating=7
 
     game_data_arr = np.array(game_data)
 
-    relevant_words = get_relevant_words(words_indie_matrix[sorted[:nvalues]], words_vector, words_list)
+    relevant_words = get_relevant_words(words_indie_matrix_temp[sorted[:nvalues]], words_vector, words_list)
 
     #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating, url, and list of relevant words
     return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]], game_data_arr[sorted[:nvalues], 5], relevant_words
 
 if __name__ == '__main__':
+    #Read in the matrix of pre-calculated words data
+    words_indie_matrix = pickle.load(open("../words_tf_idf.pkl", 'rb'))
+
     con = login_mysql("../login.txt")
 
     with con:
         cur = con.cursor()
         
-        titles, game_types, themes, ratings, sim_ratings = run_everything_on_input_title('BioShock', [], cur)
+        titles, game_types, themes, ratings, sim_ratings = run_everything_on_input_title('BioShock', [], words_indie_matrix, cur)
         for i in range(len(titles)):
-
             print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
