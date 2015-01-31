@@ -337,7 +337,7 @@ def run_everything_on_input_title(title, platforms, words_indie_matrix, cur, nva
     words_vector = make_metacritic_game_words_vector(my_summary, words_index, idf)
 
     #Find the "distance" to each of the other games
-    similarity_rating = get_all_words_distance(words_indie_matrix_temp, words_vector)
+    similarity_rating = get_all_words_distance(words_indie_matrix_trim, words_vector)
     rating = np.array(game_data)[:,1].astype(float)
     votes = np.array(game_data)[:,2].astype(int)
     rating_subset = np.where( (rating > min_rating) & (votes > min_votes))[0]
@@ -350,7 +350,7 @@ def run_everything_on_input_title(title, platforms, words_indie_matrix, cur, nva
 
     game_data_arr = np.array(game_data)
 
-    relevant_words = get_relevant_words(words_indie_matrix_temp[sorted[:nvalues]], words_vector, words_list)
+    relevant_words = get_relevant_words(words_indie_matrix_trim[sorted[:nvalues]], words_vector, words_list)
 
     #Returns: titles, game_types, themes (genres), indie db rating, and the similarity rating, url, and list of relevant words
     return game_data_arr[sorted[:nvalues], 0], game_data_arr[sorted[:nvalues],4], game_data_arr[sorted[:nvalues],3], rating[sorted[:nvalues]], similarity_rating[sorted[:nvalues]], game_data_arr[sorted[:nvalues], 5], relevant_words
