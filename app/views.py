@@ -2,12 +2,16 @@ from flask import render_template, request
 from app import app
 from recommender import recommend_games
 import MySQLdb as mdb
+import cPickle as pickle
 
 from login_script import login_mysql
 
 #Read login info
 db = login_mysql('login.txt')
 charset = 'utf8'
+
+#Get the full list of indie game words -- this may take a bit to load
+words_indie_matrix = pickle.load(open("../words_tf_idf.pkl",'rb'))
 
 #Get the full list of Metacritic game titles
 with db:
@@ -71,7 +75,7 @@ def games_output():
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
-    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,cur)
+    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,words_indie_matrx,cur)
 
   games = []
   for i in range(len(titles)):
