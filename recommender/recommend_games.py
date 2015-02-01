@@ -3,7 +3,7 @@
 import numpy as np
 import MySQLdb as mdb
 import re
-import cPickle as pickle
+import pickle
 
 import clean_text
 from login_script import login_mysql
