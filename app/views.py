@@ -2,7 +2,7 @@ from flask import render_template, request
 from app import app
 from recommender import recommend_games
 import MySQLdb as mdb
-import cPickle as pickle
+import pickle
 
 from login_script import login_mysql
 
