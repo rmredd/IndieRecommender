@@ -3,7 +3,7 @@
 import numpy as np
 import MySQLdb as mdb
 import re
-import pickle
+import pandas as pd
 
 import clean_text
 from login_script import login_mysql
@@ -357,7 +357,8 @@ def run_everything_on_input_title(title, platforms, words_indie_matrix, cur, nva
 
 if __name__ == '__main__':
     #Read in the matrix of pre-calculated words data
-    words_indie_matrix = pickle.load(open("../words_tf_idf.pkl", 'rb'))
+    words_indie_matrix = pd.read_csv("../words_tf_idf.csv").as_matrix()
+    words_indie_matrix = words_indie_matrix[:,1:]
 
     con = login_mysql("../login.txt")
 
