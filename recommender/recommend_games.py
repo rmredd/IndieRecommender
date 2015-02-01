@@ -297,7 +297,7 @@ def get_relevant_words(indie_words_matrix, words_vector, words_list):
         
     relevant_words = words_list[ np.argsort(temp_vector)[::-1] ]
     for i in range(len(relevant_words)):
-        relevant_words[i] = relevant_words[i][5:]
+        relevant_words[i] = relevant_words[i]
 
     return relevant_words[:5]
 
@@ -365,5 +365,6 @@ if __name__ == '__main__':
         cur = con.cursor()
         
         titles, game_types, themes, ratings, sim_ratings, urls, rel_words = run_everything_on_input_title('BioShock', [], words_indie_matrix, cur)
+        print rel_words
         for i in range(len(titles)):
             print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
