@@ -297,6 +297,10 @@ def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords
         insert_command = "INSERT INTO idf_vals(word, idf) VALUES ('"+words_common_text[i]+"', "+str(idf[i])+")"
         cur.execute(insert_command)
 
+    #For testing purposes: make a csv file using pandas
+    words_df = pd.DataFrame(words_tf_idf)
+    words_df.to_csv("../words_tf_idf.csv")
+
     return
 
 
