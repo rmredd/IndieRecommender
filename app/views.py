@@ -2,7 +2,7 @@ from flask import render_template, request
 from app import app
 from recommender import recommend_games
 import MySQLdb as mdb
-import pickle
+import pandas as pd
 
 from login_script import login_mysql
 
@@ -11,7 +11,7 @@ db = login_mysql('login.txt')
 charset = 'utf8'
 
 #Get the full list of indie game words -- this may take a bit to load
-words_indie_matrix = pickle.load(open("words_tf_idf.pkl",'rb'))
+words_indie_matrix = pd.read_csv("words_tf_idf.csv").as_matrix()[:,1:]
 
 #Get the full list of Metacritic game titles
 with db:
