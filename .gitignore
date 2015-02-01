@@ -10,3 +10,4 @@ predictor/train_predictor.pyc
 predictor/train_predictor.py~
 login.txt
 words_tf_idf.pkl
+words_tf_idf.csv
