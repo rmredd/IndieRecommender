@@ -5,7 +5,6 @@ import re
 import nltk
 import MySQLdb as mdb
 import pandas as pd
-import cPickle as pickle
 
 import title_cleanup
 from login_script import login_mysql
@@ -246,9 +245,9 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
     return
 
 
-def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords=1000):
+def produce_csv_of_common_words(words_list, game_ids, cur, output_dir, nwords=1000):
     '''
-    Works the same as produce_database_of..., but saves the data to a pair of pickle files
+    Works the same as produce_database_of..., but saves the data to csv file
     instead of to the MySQL database, because the number of columns in the array of word values
     is generally too large
     Note that this still creates the idf_vals table in the database
@@ -286,9 +285,6 @@ def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords
             
         words_tf_idf[i] = get_tf_idf(words_common_index,words_list[i], idf)
     
-    #Pickle this array
-    pickle.dump(words_tf_idf, open(output_dir+"words_tf_idf.pkl", 'wb') )
-
     #Create a shorter table for saving the baseline idf values
     cur.execute("DROP TABLE IF EXISTS idf_vals")
     create_command = "CREATE TABLE idf_vals(Id INT PRIMARY KEY AUTO_INCREMENT, word VARCHAR(50), idf FLOAT)"
@@ -299,7 +295,7 @@ def produce_pickle_of_common_words(words_list, game_ids, cur, output_dir, nwords
 
     #For testing purposes: make a csv file using pandas
     words_df = pd.DataFrame(words_tf_idf)
-    words_df.to_csv("../words_tf_idf.csv")
+    words_df.to_csv(outdir+"words_tf_idf.csv")
 
     return
 
@@ -315,6 +311,6 @@ if __name__ == "__main__":
         print "Data acquired."
 
         #produce_database_of_common_words(words_list, game_ids, cur, nwords=1000)
-        produce_pickle_of_common_words(words_list, game_ids, cur, "../", nwords=1000)
+        produce_csv_of_common_words(words_list, game_ids, cur, "../", nwords=1000)
 
     print "All done!"
