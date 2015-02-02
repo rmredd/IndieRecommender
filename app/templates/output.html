@@ -11,6 +11,16 @@
       <div class="starter-template">
         <h2>Results:</h2>
         <p class="lead">Here are some Indie games that may be similar to {{ big_game }}.</p>
+      </div>
+
+      <table class="table table-hover">
+	<tr><th>Title</th><th>Game Type</th><th>Setting</th><th>User Rating</th><th>Score</th></tr>
+      {% for game in games %}
+      <tr><td> <a href="{{ game['url'] }}">{{ game['title'] }} </a></td><td>{{ game['game_type']}}</td><td> {{ game['theme'] }}</td><td>{{ game['rating'] }}</td><td>{{ game['sim_rating'] }}</td></tr>
+      {% endfor %}
+      </table>
+
+      <div>
 	{% if platforms %}
 	<p> You requested games that work on: {% for platform in platforms %} {{ platform }} {% endfor %}</p>
 	{% else %}
@@ -18,13 +28,6 @@
 	{% endif %}
 	<p> Some of the descriptive terms used to find games were: {% for word in rel_words %} {{ word }} {% endfor %}</p>
       </div>
-
-      <table class="table table-hover">
-	<tr><th>Title</th><th>Game Type</th><th>Setting</th><th>Rating</th><th>Score</th></tr>
-      {% for game in games %}
-      <tr><td> <a href="{{ game['url'] }}">{{ game['title'] }} </a></td><td>{{ game['game_type']}}</td><td> {{ game['theme'] }}</td><td>{{ game['rating'] }}</td><td>{{ game['sim_rating'] }}</td></tr>
-      {% endfor %}
-      </table>
 
     </div><!-- /.container -->
 
