@@ -193,7 +193,7 @@ def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
     select_command += " FROM Games"
 
     #If we're doing any additional selections, add a where statement
-    if len(genre) > 0 or len(game_type) > 0 or len(num_players) > 0:
+    if len(genre) > 0 or len(game_type) > 0 or len(num_players) > 0 or len(platforms) > 0:
         select_command += " WHERE "
 
     #Select on the number of players
@@ -230,7 +230,8 @@ def get_matching_indie_games(platforms, genre, game_type, num_players, cur):
 
     #Now, throw in platform selection
     if len(platforms) > 0:
-        select_command += " AND "
+        if len(genre) > 0 or len(game_type) > 0 or len(num_players) > 0:
+            select_command += " AND "
     if len(platforms) == 1:
         select_command += "Games."+platforms[0]+"=1"
     if len(platforms) > 1:
@@ -366,6 +367,11 @@ if __name__ == '__main__':
         cur = con.cursor()
         
         titles, game_types, themes, ratings, sim_ratings, urls, rel_words = run_everything_on_input_title('BioShock', [], words_indie_matrix, cur)
-        print rel_words
+        print "BioShock test: ",rel_words
+        for i in range(len(titles)):
+            print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
+
+        titles, game_types, themes, ratings, sim_ratings, urls, rel_words = run_everything_on_input_title('Orion: Dino Horde', ['Mac'], words_indie_matrix, cur)
+        print "Orion: Dino Horde test: ", rel_words
         for i in range(len(titles)):
             print titles[i], game_types[i], themes[i], ratings[i], sim_ratings[i]
