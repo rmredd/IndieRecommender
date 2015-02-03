@@ -9,5 +9,30 @@
     <div class="starter-template">
         <h2>About</h2>
         <p>Here are a few things you might like to know about the Indie Recommender tool, and Indie games in general.</p>
+	<p>Game recommendations are based on data from two sources.</p>
+	<p>The first source is Metacritic PC game listings.  From Metacritic, this app uses summary descriptions of games,
+	  their titles, and genre information (like "Sci-Fi") to classify the game.</p>
+	<p>Similar information is obtained about Indie games from IndieDB.com.</p>
+	<p>The genres are generally used to "slice" through the data.  For instance, if a Metacritic game is a shooter game, 
+	  the app will search for Indie shooter games.</p>
+	<p>The similarity score is given in a range from 0 to 100.  If a game has a similarity score of 100,
+	  that means the summary text of the Indie game and the Metacritic game is exactly the same.  If it's 0, then
+	  the text is completely different.</p>
+	<p>Most good matches have values of above 20.  Matches at 15-20 may be decent,
+	  but may be suspect.  Very high match scores (above 30, and often far above) may indicate that the games
+	  are the same game, or closely related.  Sequels, perhaps.</p>
+	<p>While most of these "good matches" will be fine, there are some failures.  These are mostly in cases
+	  where a game is miscategorized, or poorly summarized, in at least one of the two databases.</p>
+	<p>The Indie game "Thomas Was Alone" is an example of this.  In the Metacritic database, it's 
+	  referred to as an adventure game narrated by someone from Assassin's Creed.  Conversely, in the
+	  IndieDB, it is described as a pleasant platformer about friendship.</p>
+	<p>Finally, the "User Rating" listed on the front page is the average user rating of the game on 
+	  the IndieDB website.  If the rating value is -1, then no one has rated the game yet.</p>
+	<p>Possible future features include:
+	  <li>Incorporating reviews into the similarity scoring process.</li>
+	  <li>Inclusion of Indie games' Metacritic scores where they are available.</li>
+	</p>
+	<p>This app was produced as a project while I was an <a href="http://insightdatascience.com">Insight Data Science</a> Fellow.</p>
+	
     </div>
 {% endblock %}
