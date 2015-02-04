@@ -175,11 +175,14 @@ def produce_database_of_common_words(words_list, game_ids, cur, nwords=1000):
     words_series = pd.Series(all_words)
 
     print "Moving on..."
-    #Get the 1000 most common words
+    #Get the 1000 most common words, drops the 25 most common (don't carry much info)
     words_common = words_series.value_counts()
-    words_common_text = words_common.index[:nwords]
-    words_common_count = words_common[:nwords]
+    words_common_text = words_common.index[:nwords+25]
+    words_common_count = words_common[:nwords+25]
+    words_common_text = words_common_text[25:]
+    worsd_common_count = words_common_count[25:]
     print "Total number of words (non-unique): ",len(all_words)
+    print "Total number of unique words: ", len(words_common)
     print "Common words: ",words_common_text
     #Create a dictionary object for sorting out words later
     words_common_index = dict([])
@@ -263,9 +266,10 @@ def produce_csv_of_common_words(words_list, game_ids, cur, output_dir, nwords=10
     print "Moving on..."
     #Get the 1000 most common words
     words_common = words_series.value_counts()
-    words_common_text = words_common.index[:nwords]
-    words_common_count = words_common[:nwords]
+    words_common_text = words_common.index[25:nwords+25]
+    words_common_count = words_common[25:nwords+25]
     print "Total number of words (non-unique): ",len(all_words)
+    print "Total number of unique words: ", len(words_common)
     print "Common words: ",words_common_text
     #Create a dictionary object for sorting out words later
     words_common_index = dict([])
