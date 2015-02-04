@@ -295,7 +295,7 @@ def produce_csv_of_common_words(words_list, game_ids, cur, output_dir, nwords=10
 
     #For testing purposes: make a csv file using pandas
     words_df = pd.DataFrame(words_tf_idf)
-    words_df.to_csv(outdir+"words_tf_idf.csv")
+    words_df.to_csv(output_dir+"words_tf_idf.csv")
 
     return
 
