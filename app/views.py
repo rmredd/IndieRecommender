@@ -2,6 +2,7 @@ from flask import render_template, request
 from app import app
 from recommender import recommend_games
 import MySQLdb as mdb
+import numpy as np
 import pandas as pd
 
 from login_script import login_mysql
@@ -75,12 +76,19 @@ def games_output():
   with db:
     cur = db.cursor()
     #just select the city from the world_innodb that the user inputs
-    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,words_indie_matrix,cur)
+    titles, game_types, themes, ratings, sim_ratings, game_urls, rel_words = recommend_games.run_everything_on_input_title(game,platforms,words_indie_matrix,cur,min_votes=5, nvalues=6)
 
   games = []
-  for i in range(len(titles)):
-    games.append(dict(title=titles[i], game_type=game_types[i], theme=themes[i], rating=ratings[i],
-                      sim_rating=int(sim_ratings[i]*100+0.5), url=game_urls[i]))
+  #Checking to see if the game itself has been returned in the list, and removing it if so
+  if game in titles:
+     non_duplicate = np.where(titles != game)[0]
+     for i in non_duplicate:
+        games.append(dict(title=titles[i], game_type=game_types[i], theme=themes[i], rating=ratings[i],
+                          sim_rating=int(sim_ratings[i]*100+0.5), url=game_urls[i]))
+  else:
+     for i in range(np.min([len(titles),5])):
+        games.append(dict(title=titles[i], game_type=game_types[i], theme=themes[i], rating=ratings[i],
+                          sim_rating=int(sim_ratings[i]*100+0.5), url=game_urls[i]))
 
   if len(platforms) == 0:
      return render_template("output.html", big_game = game, games = games, meta_titles = meta_titles, rel_words=rel_words)
