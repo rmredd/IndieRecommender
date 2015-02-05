@@ -103,3 +103,7 @@ def games_about():
 @app.route('/contact')
 def games_contact():
    return render_template("contact.html")
+
+@app.route('/slides')
+def slides():
+   return render_template("slides.html")
