@@ -56,9 +56,9 @@
 	  <div class="row">
 	    <div class="col-lg-6">
               <label for="platform_check" class="btn">
-		<input type="checkbox" name="platform_w" aria-label="Windows" value="Windows"> Windows
-		<input type="checkbox" name="platform_m" aria-label="Mac" value="Mac"> Mac
-		<input type="checkbox" name="platform_l" aria-label="Linux" value="Linux"> Linux
+		<input type="checkbox" name="platform_w" aria-label="Windows" value="Windows" {% if "Windows" in platforms %} checked {% endif %}> Windows
+		<input type="checkbox" name="platform_m" aria-label="Mac" value="Mac" {% if "Mac" in platforms %} checked {% endif %}> Mac
+		<input type="checkbox" name="platform_l" aria-label="Linux" value="Linux" {% if "Linux" in platforms %} checked {% endif %}> Linux
               </label>
 	    </div><!-- /.col-lg-6 -->
 	  </div><!-- /.row -->
