@@ -60,18 +60,19 @@ def games_output():
   #pull 'ID' from input field and store it
   game = request.args.get('game_select')
   
-  #If there was no input, pull the "no entry" output instead
-  if game == "" or game == None:
-     return render_template("output_nogame.html")
-  
-  #Get whether or not the checkboxes are checked
   platforms = []
+
+  #Get whether or not the checkboxes are checked
   if 'platform_w' in request.values.keys():
      platforms.append(request.values['platform_w'])
   if 'platform_m' in request.values.keys():
      platforms.append(request.values['platform_m'])
   if 'platform_l' in request.values.keys():
      platforms.append(request.values['platform_l'])
+
+  #If there was no input, pull the "no entry" output instead
+  if game == "" or game == None:
+     return render_template("output_nogame.html", meta_titles = meta_titles, platforms = platforms )
 
   with db:
     cur = db.cursor()
