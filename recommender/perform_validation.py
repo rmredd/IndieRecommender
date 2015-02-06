@@ -71,13 +71,10 @@ def run_validation_test_single_game(indie_id, title, game_type, theme, players, 
         words_vector = recommend_games.make_metacritic_game_words_vector(meta_summary, words_index, idf)
         words_vector = np.array(words_vector).astype(float)
         #Get the vector on the indie side
-        select_command = "SELECT Games.rating "
-        for word in words_list:
-            select_command += ", Summary_words."+word
-        select_command += " FROM Games JOIN Summary_words ON Games.Id = Summary_words.game_id WHERE Games.id="+str(indie_id)
+        select_command = "SELECT Id FROM Games"
         cur.execute(select_command)
-        words_vector_indie = cur.fetchall()[0]
-        words_vector_indie = np.array(words_vector_indie[1:]).astype(float)
+        all_indie_ids = np.array(cur.fetchall())[:,0]
+        words_vector_indie = words_matrix[np.where(all_indie_ids == indie_id)[0]]
         sim_self = recommend_games.get_words_distance(words_vector_indie, words_vector)
 
     return title_match[best_place], sim_match[best_place], sim_self
