@@ -36,16 +36,18 @@ def get_meta_indie_games(cur):
     return titles, indie_ids, meta_ids, game_types, themes, players, meta_genres
 
 def run_validation_test_single_game(indie_id, title, game_type, theme, players, meta_genre, words_list, 
-                                    words_index, cur, min_rating = 7., min_votes=20):
+                                    words_index, words_matrix, cur, min_rating = 7., min_votes=20):
     '''
     Runs a validation test on a single game.
 
     Returns title of best-match game, its similarity rating, and the rating of the input game
     '''
 
-    title_match, gt_match, theme_match, rate_match, sim_match = recommend_games.run_everything_on_input_title(title, [], cur, nvalues=2,
-                                                                                                              min_rating=min_rating,
-                                                                                                              min_votes = min_votes)
+    (title_match, gt_match, theme_match, rate_match, sim_match, 
+     urls, rel_words) = recommend_games.run_everything_on_input_title(title, [], words_matrix,
+                                                                      cur, nvalues=2,
+                                                                      min_rating=min_rating,
+                                                                      min_votes = min_votes)
     if title == title_match[0]:
         best_place = 1
     else:
@@ -61,11 +63,9 @@ def run_validation_test_single_game(indie_id, title, game_type, theme, players, 
         meta_summary = cur.fetchall()[0][0]
 
         #Get the idf normalizations
-        cur.execute("SELECT * FROM idf_vals WHERE Id = 1")
-        idf = cur.fetchone()
-        idf = idf[1:]
-        idf = np.array(idf).astype(float)
-        leftovers = cur.fetchall() #In case something weird happens and there's more than one row   
+        cur.execute("SELECT idf FROM idf_vals")
+        idf = cur.fetchall()
+        idf = np.array(idf).astype(float)[:,0]
         
         #Get the vector on the metacritic side
         words_vector = recommend_games.make_metacritic_game_words_vector(meta_summary, words_index, idf)
@@ -83,6 +83,10 @@ def run_validation_test_single_game(indie_id, title, game_type, theme, players, 
     return title_match[best_place], sim_match[best_place], sim_self
 
 if __name__ == "__main__":
+    #Get the words matrix from csv file
+    words_matrix = pd.read_csv("../words_tf_idf.csv").as_matrix()
+    words_matrix = words_matrix[:,1:]
+
     con = login_mysql("../login.txt")
 
     with con:
@@ -97,8 +101,9 @@ if __name__ == "__main__":
         print "Starting validation..."
         for i in range(len(titles)):
             sim_title, sim_other, sim_self = run_validation_test_single_game(indie_ids[i], titles[i], game_types[i], 
-                                                                                           themes[i], players[i], meta_genres[i], 
-                                                                                           words_list, words_index, cur, min_votes=-1, min_rating=-2)
+                                                                             themes[i], players[i], meta_genres[i], 
+                                                                             words_list, words_index, words_matrix,
+                                                                             cur, min_votes=-1, min_rating=-2)
             print i, "True: ", titles[i], sim_self
             print "    Match: ", sim_title, sim_other
             sim_self_all[i] = sim_self
