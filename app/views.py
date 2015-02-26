@@ -19,7 +19,6 @@ with db:
    cur = db.cursor()
    meta_titles = recommend_games.get_list_of_metacritic_titles(cur)
 db.close()
-db = login_mysql('login.txt')
 
 @app.route('/')
 @app.route('/index')
@@ -57,6 +56,8 @@ def games_page_fancy():
 
 @app.route('/output', methods=['GET'])
 def games_output():
+  #Make sure we're all logged in
+  db = login_mysql('login.txt')
   #pull 'ID' from input field and store it
   game = request.args.get('game_select')
   
