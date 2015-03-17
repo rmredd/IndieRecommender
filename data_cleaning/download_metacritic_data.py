@@ -11,6 +11,7 @@ import MySQLdb as mdb
 
 import title_cleanup
 from login_script import login_mysql
+from login_script import get_apikey
 
 #For downloading and cleaning up the two Metacritic data sets
 
@@ -62,7 +63,7 @@ def collect_basic_metacritic_data():
     '''
     
     games_url = "https://www.kimonolabs.com/api/5obxxzg8"
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+    apikey = get_apikey("apikey.txt")
     
     #Set up the empty lists for the first batch
     title = []
@@ -131,7 +132,7 @@ def collect_more_metacritic_data_to_database(cur):
 
     more_info_url = "https://www.kimonolabs.com/api/3v3rrxjc"
     #My API key -- currently hard-coded
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+    apikey = get_apikey("apikey.txt")
 
     for i in range(2):
         #Get the basic data from the api

@@ -7,3 +7,9 @@ def login_mysql(loginfile):
     login = login_text.split()
     con = mdb.connect(login[0],login[1],login[2],'indiedb')
     return con
+
+def get_apikey(filename):
+    f = open(filename)
+    apikey = f.readline()
+    f.close()
+    return apikey

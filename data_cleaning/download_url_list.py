@@ -9,6 +9,8 @@ import MySQLdb as mdb
 
 import title_cleanup
 
+from login_script import get_apikey
+
 def read_single_dataset_from_kimono(address,apikey,koffset):
 
     #Full URL for data retrieval
@@ -29,7 +31,7 @@ def print_urllist():
 
     address = "https://www.kimonolabs.com/api/7jleppae"
     #My API key -- currently hard-coded
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+    apikey = get_apikey("apikey.txt")
 
     f = open('gamelist.txt','w')
     
@@ -57,8 +59,7 @@ def collect_indiedb_data():
     '''
     
     games_url = "https://www.kimonolabs.com/api/dhngio36"
-    #My API key -- currently hard-coded
-    apikey = "ziMs6ipsOhkSt4rlCoDEL78zT1iGqvfu"
+    apikey = get_apikey("apikey.txt")
 
     #Set up the empty lists
     title = []
